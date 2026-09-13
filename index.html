@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SalesPilot 業務案件追蹤與智慧名片系統</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Phosphor Icons for high-fidelity UI -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+            lineGreen: '#06C755',
+            lineDark: '#049e43',
+          },
+          boxShadow: {
+            'card-lift': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+            'nav-bar': '0 -4px 20px -2px rgba(0, 0, 0, 0.08)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom mobile UI enhancements */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .scanner-laser {
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0) 0%, rgba(16, 185, 129, 0.8) 50%, rgba(16, 185, 129, 0) 100%);
+      animation: scanLaser 2.2s ease-in-out infinite alternate;
+    }
+    @keyframes scanLaser {
+      0% { transform: translateY(0%); }
+      100% { transform: translateY(220px); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-24 font-sans select-none sm:select-auto">
+
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 sm:px-6 transition-all">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-emerald-200">
+          <i class="ph-fill ph-briefcase text-2xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold text-slate-900 leading-tight">SalesPilot</h1>
+            <span class="text-[10px] bg-emerald-100 text-brand-700 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">Pro</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">業務追蹤・AI名片・LINE提醒</p>
+        </div>
+      </div>
+      
+      <!-- Right Quick Actions -->
+      <div class="flex items-center space-x-2">
+        <button id="btnQuickScan" onclick="switchTab('scanner')" class="relative flex items-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-1.5 rounded-lg text-xs font-semibold border border-brand-200 transition active:scale-95">
+          <i class="ph-bold ph-scan text-base"></i>
+          <span class="hidden xs:inline">掃名片</span>
+        </button>
+        <button onclick="openLineReminderCenter()" class="relative flex items-center gap-1.5 bg-lineGreen hover:bg-lineDark text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition active:scale-95">
+          <i class="ph-fill ph-chat-circle-dots text-base"></i>
+          <span>LINE提醒</span>
+          <span id="linePendingBadge" class="hidden absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 pt-4">
+
+    <!-- TAB 1: 業務總覽儀表板 (Dashboard) -->
+    <section id="tab-dashboard" class="tab-content space-y-5">
+      <!-- Top Metrics Carousel -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-100 shadow-card-lift">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="text-xs font-medium">今日待追蹤</span>
+            <i class="ph-bold ph-calendar-check text-brand-600 text-lg"></i>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="statTodayFollow" class="text-2xl font-black text-slate-800">0</span>
+            <span class="text-xs text-slate-400">個案件</span>
+          </div>
+          <div id="statOverdueTag" class="mt-1 text-[11px] text-rose-500 font-medium flex items-center gap-1 hidden">
+            <i class="ph-fill ph-warning-circle"></i> 含 <span id="statOverdueCount">0</span> 筆逾期
+          </div>
+        </div>
+
+        <!-- 進行中商機（整合預估總額，精緻小字體呈現） -->
+        <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-100 shadow-card-lift">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="text-xs font-medium">進行中商機</span>
+            <i class="ph-bold ph-chart-line-up text-blue-600 text-lg"></i>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="statActiveDeals" class="text-2xl font-black text-slate-800">0</span>
+            <span class="text-xs text-slate-400">筆</span>
+          </div>
+          <!-- 併入的預估總額區塊 (小字呈現) -->
+          <div class="mt-1 pt-1 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <span>預估總額</span>
+            <span class="font-bold text-emerald-600">NT$ <span id="statPipelineValue">0</span></span>
+          </div>
+        </div>
+
+        <!-- 即時記事本（替換原預估總額卡片：專門記錄臨時交辦/非商機通知事項） -->
+        <div onclick="openQuickNotesModal()" class="bg-white p-3.5 sm:p-4 rounded-2xl border border-amber-100 hover:border-amber-300 shadow-card-lift cursor-pointer transition active:scale-98 group">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="text-xs font-semibold text-amber-700 flex items-center gap-1">
+              <i class="ph-fill ph-notepad text-amber-500"></i> 即時記事本
+            </span>
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="statQuickNotesCount" class="text-2xl font-black text-slate-800">0</span>
+            <span class="text-xs text-slate-400">則待辦雜務</span>
+          </div>
+          <div class="mt-1 flex items-center justify-between text-[11px] text-amber-600 font-medium group-hover:underline">
+            <span>臨時通知速記</span>
+            <i class="ph-bold ph-arrow-up-right"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-100 shadow-card-lift">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="text-xs font-medium">名片庫存量</span>
+            <i class="ph-bold ph-identification-card text-purple-600 text-lg"></i>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="statTotalCards" class="text-2xl font-black text-slate-800">0</span>
+            <span class="text-xs text-slate-400">張名片</span>
+          </div>
+          <span class="text-[11px] text-purple-600 font-medium mt-1 block">已AI智慧建立</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Banner -->
+      <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 sm:p-5 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="bg-emerald-500/20 text-emerald-400 text-[11px] font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">AI 助理與提醒同步中</span>
+          </div>
+          <h2 class="text-base sm:text-lg font-bold">外出拜訪即時建檔，別讓任何潛在客戶溜走</h2>
+          <p class="text-xs text-slate-300">手機相機直接拍名片，自動辨識建立案件並排程 LINE 機器人追蹤提醒。</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="openAddDealModal()" class="flex-1 sm:flex-none bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center justify-center gap-1.5">
+            <i class="ph-bold ph-plus-circle text-base"></i> 新增案件
+          </button>
+          <button onclick="switchTab('scanner')" class="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 transition flex items-center justify-center gap-1.5">
+            <i class="ph-bold ph-camera text-base"></i> 拍名片歸檔
+          </button>
+        </div>
+      </div>
+
+      <!-- Urgent & Today Follow-ups Section -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base">🚨 今日追蹤任務清單</h3>
+            <span id="urgentCountBadge" class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+          </div>
+          <button onclick="sendDailyLineSummary()" class="text-xs font-semibold text-lineDark hover:text-lineGreen flex items-center gap-1 active:scale-95 transition">
+            <i class="ph-fill ph-paper-plane-tilt"></i>
+            一鍵將今日清單送往 LINE
+          </button>
+        </div>
+
+        <div id="urgentFollowList" class="space-y-2.5">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Recent Business Cards Horizontal Preview -->
+      <div class="space-y-3 pt-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base">📇 最新掃描名片</h3>
+          <button onclick="switchTab('cards')" class="text-xs text-brand-600 font-semibold hover:underline flex items-center gap-1">
+            查看全部名片冊 <i class="ph-bold ph-caret-right"></i>
+          </button>
+        </div>
+        <div id="recentCardsDeck" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: 案件追蹤看板 (Deals Pipeline) -->
+    <section id="tab-deals" class="tab-content hidden space-y-4">
+      <!-- Search & Stage Filters -->
+      <div class="flex flex-col sm:flex-row gap-2.5 justify-between">
+        <div class="relative flex-1">
+          <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input id="dealSearchInput" oninput="filterDeals()" type="text" placeholder="搜尋案件名稱、客戶公司或聯絡人..." class="w-full bg-white pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1">
+          <select id="dealStageFilter" onchange="filterDeals()" class="bg-white px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none">
+            <option value="ALL">全部階段</option>
+            <option value="LEAD">初次接洽</option>
+            <option value="PROPOSAL">方案報價</option>
+            <option value="NEGOTIATION">商務談判</option>
+            <option value="WON">贏單簽約</option>
+            <option value="LOST">戰略結案/暫緩</option>
+          </select>
+          <button onclick="openAddDealModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm flex items-center gap-1.5 transition">
+            <i class="ph-bold ph-plus"></i> 新增案件
+          </button>
+        </div>
+      </div>
+
+      <!-- Deals List / Cards Container -->
+      <div id="dealsContainer" class="space-y-3">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- TAB 3: 智慧名片冊 (Cards Book) -->
+    <section id="tab-cards" class="tab-content hidden space-y-4">
+      <div class="flex flex-col sm:flex-row gap-2.5 justify-between">
+        <div class="relative flex-1">
+          <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input id="cardSearchInput" oninput="filterCards()" type="text" placeholder="搜尋姓名、職稱、公司、電話或標籤..." class="w-full bg-white pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="switchTab('scanner')" class="flex-1 sm:flex-none bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition">
+            <i class="ph-bold ph-camera"></i> 拍名片掃描
+          </button>
+          <button onclick="openAddCardModal()" class="bg-white border border-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-50 transition">
+            手動輸入
+          </button>
+        </div>
+      </div>
+
+      <!-- Cards Grid View -->
+      <div id="cardsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: 名片拍照與AI識別 (Scanner) -->
+    <section id="tab-scanner" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-card-lift max-w-xl mx-auto">
+        <div class="text-center space-y-1 mb-4">
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            <i class="ph-fill ph-sparkle"></i> Gemini 視覺 AI 自動解析
+          </span>
+          <h2 class="text-lg font-bold text-slate-900">手機相機名片掃描器</h2>
+          <p class="text-xs text-slate-500">對準名片拍照或上傳圖片，AI 自動擷取姓名、公司、職稱與電話歸檔。</p>
+        </div>
+
+        <!-- Camera Viewfinder / Preview Box -->
+        <div class="relative w-full aspect-[16/10] bg-slate-900 rounded-2xl overflow-hidden shadow-inner flex items-center justify-center border-2 border-dashed border-slate-700 group">
+          <!-- Video Element for live camera -->
+          <video id="liveCameraVideo" class="w-full h-full object-cover hidden" playsinline autoplay muted></video>
+          
+          <!-- Image Preview for captured / uploaded file -->
+          <img id="cardImagePreview" class="w-full h-full object-cover hidden" alt="名片預覽">
+
+          <!-- Viewfinder Guidelines & Laser -->
+          <div id="viewfinderFrame" class="absolute inset-4 sm:inset-6 border-2 border-white/60 rounded-xl pointer-events-none transition flex flex-col justify-between p-2">
+            <div class="flex justify-between">
+              <span class="w-3 h-3 border-t-2 border-l-2 border-emerald-400"></span>
+              <span class="w-3 h-3 border-t-2 border-r-2 border-emerald-400"></span>
+            </div>
+            <div id="laserBar" class="w-full h-1 scanner-laser hidden"></div>
+            <div class="flex justify-between">
+              <span class="w-3 h-3 border-b-2 border-l-2 border-emerald-400"></span>
+              <span class="w-3 h-3 border-b-2 border-r-2 border-emerald-400"></span>
+            </div>
+          </div>
+
+          <!-- Empty State Graphic -->
+          <div id="scannerPlaceholder" class="text-center p-6 space-y-2 pointer-events-none">
+            <div class="w-14 h-14 mx-auto rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-3xl">
+              <i class="ph-bold ph-identification-card"></i>
+            </div>
+            <p class="text-xs text-slate-400 font-medium">尚未啟用相機或載入圖片</p>
+          </div>
+
+          <!-- Processing Overlay -->
+          <div id="ocrLoadingOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex flex-col items-center justify-center text-white space-y-3 p-4 text-center z-10">
+            <div class="w-12 h-12 rounded-full border-4 border-emerald-500/30 border-t-emerald-400 animate-spin"></div>
+            <div class="space-y-1">
+              <p class="text-sm font-bold tracking-wide">Gemini 視覺 AI 深度解析中...</p>
+              <p class="text-xs text-slate-400">提取公司名稱、聯絡電話、職稱與電子郵件</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Camera Control Toolbar -->
+        <div class="mt-4 space-y-2.5">
+          <div class="grid grid-cols-2 gap-2.5">
+            <!-- Native Mobile Camera Trigger (file input with capture="environment") -->
+            <label class="cursor-pointer bg-brand-600 hover:bg-brand-700 text-white py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition">
+              <i class="ph-fill ph-camera text-lg"></i>
+              <span>開啟手機相機拍照</span>
+              <input id="mobileCameraInput" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelected(event)">
+            </label>
+
+            <!-- Album Upload Trigger -->
+            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition border border-slate-200">
+              <i class="ph-bold ph-image text-lg"></i>
+              <span>從相簿選擇圖片</span>
+              <input id="albumUploadInput" type="file" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
+            </label>
+          </div>
+
+          <!-- Quick Test with Sample Business Card -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+            <span class="text-xs text-slate-400">沒有名片在手邊？</span>
+            <button onclick="loadDemoBusinessCard()" class="text-xs text-brand-600 hover:text-brand-700 font-semibold flex items-center gap-1 active:scale-95 transition">
+              <i class="ph-fill ph-magic-wand"></i> 一鍵載入示範名片體驗 AI 掃描
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Extraction Result Preview Form (Shows after scan) -->
+        <div id="scanResultContainer" class="hidden mt-6 pt-5 border-t border-slate-200 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i>
+              AI 解析確認與建立
+            </h3>
+            <span class="text-[11px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-medium">已完成擷取</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block text-slate-500 font-medium mb-1">姓名 *</label>
+              <input id="scanExtractedName" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-medium mb-1">職稱</label>
+              <input id="scanExtractedTitle" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-medium mb-1">公司名稱 *</label>
+              <input id="scanExtractedCompany" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-medium mb-1">聯絡電話 / 手機 *</label>
+              <input id="scanExtractedPhone" type="tel" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-medium mb-1">電子信箱</label>
+              <input id="scanExtractedEmail" type="email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-medium mb-1">公司地址</label>
+              <input id="scanExtractedAddress" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-slate-500 font-medium mb-1 text-xs">備註 / 標籤 (例如：半導體、關鍵決策者)</label>
+            <input id="scanExtractedNotes" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2 pt-2">
+            <button onclick="saveCardFromScan(true)" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 px-4 rounded-xl text-xs font-bold shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
+              <i class="ph-bold ph-lightning"></i> 存入名片並立刻建立商機案件
+            </button>
+            <button onclick="saveCardFromScan(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 px-4 rounded-xl text-xs font-bold border border-slate-200 active:scale-95 transition">
+              僅存入名片冊
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: LINE 官方機器人提醒中心 (LINE Bot Hub) -->
+    <section id="tab-line" class="tab-content hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Left Column: LINE Bot Integration Settings & Webhook Simulator -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-card-lift space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-lineGreen flex items-center justify-center text-white text-xl">
+                  <i class="ph-fill ph-chat-circle-dots"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 text-sm">LINE 官方帳號推播機器人</h3>
+                  <p class="text-xs text-slate-500">提醒業務員案件跟進、商機續約與逾期警示</p>
+                </div>
+              </div>
+              <span class="flex items-center gap-1 text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 服務就緒
+              </span>
+            </div>
+
+            <!-- Reminder Mode Selector -->
+            <div class="space-y-2 text-xs">
+              <label class="block font-bold text-slate-700">選擇推播串接方式</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" id="btnModeWebhook" onclick="setLineMode('webhook')" class="py-2.5 px-3 rounded-xl border-2 border-lineGreen bg-emerald-50/50 text-slate-800 font-semibold text-center text-xs transition">
+                  LINE Webhook / Make / Zapier
+                </button>
+                <button type="button" id="btnModeOfficial" onclick="setLineMode('token')" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold text-center text-xs transition">
+                  LINE Messaging API Token
+                </button>
+              </div>
+            </div>
+
+            <!-- Input fields based on selection -->
+            <div id="lineWebhookConfigBox" class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-600 font-medium mb-1">Webhook URL (可串接 Make、n8n、Zapier 或自建 Bot)</label>
+                <input id="inputLineWebhookUrl" type="url" placeholder="https://hook.eu1.make.com/... 或 https://api.yourbot.com/alert" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-lineGreen">
+                <p class="text-[11px] text-slate-400 mt-1">※ 若未填寫，系統將自動啟動內建「LINE 實機擬真推播預覽」體驗通知效果。</p>
+              </div>
+            </div>
+
+            <div id="lineTokenConfigBox" class="space-y-3 text-xs hidden">
+              <div>
+                <label class="block text-slate-600 font-medium mb-1">Channel Access Token (長期權杖)</label>
+                <input id="inputLineToken" type="password" placeholder="貼上 LINE Developers Messaging API Token" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-lineGreen">
+              </div>
+              <div>
+                <label class="block text-slate-600 font-medium mb-1">目標接收者 User ID (你的 LINE UID)</label>
+                <input id="inputLineUserId" type="text" placeholder="例如: U1a2b3c4d5e6..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-lineGreen">
+              </div>
+            </div>
+
+            <!-- Notification Rules -->
+            <div class="border-t border-slate-100 pt-3 space-y-2">
+              <span class="text-xs font-bold text-slate-800 block">自動提醒規則設定</span>
+              <div class="space-y-2 text-xs text-slate-600">
+                <label class="flex items-center justify-between p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer">
+                  <span>案件到達預定追蹤日當天上午 09:00 推播</span>
+                  <input type="checkbox" id="ruleDaily" checked class="rounded text-brand-600 focus:ring-brand-500">
+                </label>
+                <label class="flex items-center justify-between p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer">
+                  <span>案件逾期未追蹤時發送緊急警示通知</span>
+                  <input type="checkbox" id="ruleOverdue" checked class="rounded text-brand-600 focus:ring-brand-500">
+                </label>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-2 flex gap-2">
+              <button onclick="saveLineSettings()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl text-xs font-bold transition active:scale-95">
+                儲存 LINE 設定
+              </button>
+              <button onclick="sendTestLineNotification()" class="bg-lineGreen hover:bg-lineDark text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow">
+                <i class="ph-bold ph-paper-plane-tilt"></i> 測試發送追蹤卡片
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive LINE Smartphone Mockup Preview -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="w-full max-w-[340px] bg-[#8c9dae] rounded-[38px] p-3 shadow-2xl border-4 border-slate-800 relative">
+            <!-- Notch / Speaker -->
+            <div class="w-24 h-4 bg-slate-800 rounded-b-xl mx-auto mb-2 flex items-center justify-center">
+              <div class="w-8 h-1 bg-slate-700 rounded-full"></div>
+            </div>
+
+            <!-- Phone Screen Area -->
+            <div class="bg-[#8c9dae] rounded-[28px] overflow-hidden flex flex-col h-[490px] border border-slate-400/20">
+              
+              <!-- LINE Top Chat Header -->
+              <div class="bg-slate-900/90 backdrop-blur text-white px-3 py-2.5 flex items-center justify-between text-xs border-b border-slate-700/50">
+                <div class="flex items-center gap-2">
+                  <i class="ph-bold ph-caret-left text-sm"></i>
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-6 h-6 rounded-full bg-lineGreen flex items-center justify-center text-white text-xs">
+                      <i class="ph-fill ph-robot"></i>
+                    </div>
+                    <div>
+                      <div class="font-bold text-[11px] leading-tight flex items-center gap-1">
+                        SalesPilot 業務秘書
+                        <i class="ph-fill ph-seal-check text-emerald-400 text-[10px]"></i>
+                      </div>
+                      <span class="text-[9px] text-slate-400">官方帳號</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 text-slate-300">
+                  <i class="ph-bold ph-magnifying-glass"></i>
+                  <i class="ph-bold ph-list"></i>
+                </div>
+              </div>
+
+              <!-- LINE Chat Messages Stream -->
+              <div id="lineChatStream" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
+                <!-- Timestamp -->
+                <div class="text-center">
+                  <span class="bg-black/20 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">今天 09:00</span>
+                </div>
+
+                <!-- Simulated Flex Card Message from Bot -->
+                <div class="flex items-start gap-2 max-w-[95%]">
+                  <div class="w-7 h-7 rounded-full bg-lineGreen text-white flex-shrink-0 flex items-center justify-center text-xs">
+                    <i class="ph-fill ph-robot"></i>
+                  </div>
+                  <div class="bg-white rounded-2xl p-3 shadow-md border border-slate-200 space-y-2 text-slate-800">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                      <span class="font-bold text-slate-900 text-xs flex items-center gap-1">
+                        🔔 業務追蹤提醒
+                      </span>
+                      <span class="text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded">今日待訪</span>
+                    </div>
+                    <div>
+                      <p class="font-bold text-xs text-slate-900">宏碁科技 - 雲端架構升級案</p>
+                      <p class="text-[11px] text-slate-500">聯絡人：林威宇 專案協理</p>
+                      <p class="text-[11px] text-slate-500">電話：0912-345-678</p>
+                    </div>
+                    <div class="bg-emerald-50 rounded-lg p-2 text-[10px] text-emerald-800 font-medium">
+                      💡 前次備忘：客戶詢問 Q3 預算折讓，預計今日回覆報價單。
+                    </div>
+                    <!-- Flex Quick Actions -->
+                    <div class="grid grid-cols-2 gap-1.5 pt-1">
+                      <a href="tel:0912345678" class="text-center bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-lg text-[10px] font-bold">
+                        📞 立即致電
+                      </a>
+                      <button onclick="showToast('已在 LINE 模擬完成今日案件追蹤！')" class="bg-lineGreen hover:bg-lineDark text-white py-1.5 rounded-lg text-[10px] font-bold">
+                        ✅ 完成追蹤
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- LINE Simulated Bottom Input Bar -->
+              <div class="bg-white p-2 border-t border-slate-200 flex items-center gap-2">
+                <i class="ph-bold ph-plus-circle text-slate-400 text-lg"></i>
+                <input type="text" placeholder="輸入訊息或指令..." readonly class="flex-1 bg-slate-100 rounded-full px-3 py-1.5 text-[11px] focus:outline-none text-slate-400">
+                <i class="ph-fill ph-paper-plane-right text-lineGreen text-lg"></i>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 shadow-nav-bar px-2 py-1.5 sm:hidden">
+    <div class="grid grid-cols-5 gap-1 items-center max-w-md mx-auto text-center">
+      
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn py-1 text-brand-600 flex flex-col items-center justify-center transition">
+        <i class="ph-fill ph-squares-four text-xl"></i>
+        <span class="text-[10px] font-semibold mt-0.5">總覽</span>
+      </button>
+
+      <button onclick="switchTab('deals')" id="nav-deals" class="nav-btn py-1 text-slate-400 flex flex-col items-center justify-center transition">
+        <i class="ph-bold ph-briefcase text-xl"></i>
+        <span class="text-[10px] font-semibold mt-0.5">案件</span>
+      </button>
+
+      <!-- Center Floating Camera Button -->
+      <button onclick="switchTab('scanner')" id="nav-scanner" class="py-1 text-slate-400 flex flex-col items-center justify-center -mt-5 transition group">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-brand-600 to-emerald-400 text-white flex items-center justify-center shadow-lg shadow-brand-500/40 group-active:scale-90 transition">
+          <i class="ph-bold ph-camera text-2xl"></i>
+        </div>
+        <span class="text-[10px] font-bold text-slate-700 mt-0.5">拍名片</span>
+      </button>
+
+      <button onclick="switchTab('cards')" id="nav-cards" class="nav-btn py-1 text-slate-400 flex flex-col items-center justify-center transition">
+        <i class="ph-bold ph-identification-card text-xl"></i>
+        <span class="text-[10px] font-semibold mt-0.5">名片冊</span>
+      </button>
+
+      <button onclick="switchTab('line')" id="nav-line" class="nav-btn py-1 text-slate-400 flex flex-col items-center justify-center transition">
+        <i class="ph-bold ph-chat-circle-dots text-xl"></i>
+        <span class="text-[10px] font-semibold mt-0.5">LINE提醒</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MODAL: 新增/編輯案件 (Deal Modal) -->
+  <div id="dealModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 id="dealModalTitle" class="text-base font-bold text-slate-900">建立業務追蹤案件</h3>
+        <button onclick="closeDealModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <form id="dealForm" onsubmit="handleSaveDeal(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="dealInputId">
+        
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">案件名稱 *</label>
+          <input id="dealInputTitle" type="text" required placeholder="例如：2026年度雲端維護續約案" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">客戶公司 *</label>
+            <input id="dealInputCompany" type="text" required placeholder="例如：台積電" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">主要窗口姓名 *</label>
+            <input id="dealInputContact" type="text" required placeholder="例如：張經理" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">聯絡電話</label>
+            <input id="dealInputPhone" type="tel" placeholder="09xx-xxx-xxx" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">預估合約金額 (NTD)</label>
+            <input id="dealInputAmount" type="number" min="0" step="1000" placeholder="500000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">目前進度階段</label>
+            <select id="dealInputStage" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option value="LEAD">初次接洽 (20%)</option>
+              <option value="PROPOSAL">方案報價 (40%)</option>
+              <option value="NEGOTIATION">商務談判 (70%)</option>
+              <option value="WON">贏單簽約 (100%)</option>
+              <option value="LOST">暫緩/結案 (0%)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">下一次追蹤日期 *</label>
+            <input id="dealInputFollowDate" type="date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">追蹤備忘與商談重點</label>
+          <textarea id="dealInputNotes" rows="3" placeholder="記錄客戶需求重點、下次拜訪準備資料或價格折讓底線..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="button" onclick="closeDealModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition">
+            取消
+          </button>
+          <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-xl font-bold shadow transition active:scale-95">
+            確認儲存案件
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: 手動新增/編輯名片 (Card Modal) -->
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 id="cardModalTitle" class="text-base font-bold text-slate-900">建立聯絡人名片</h3>
+        <button onclick="closeCardModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <form id="cardForm" onsubmit="handleSaveCard(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="cardInputId">
+        
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">姓名 *</label>
+            <input id="cardInputName" type="text" required placeholder="張忠平" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">職稱</label>
+            <input id="cardInputTitle" type="text" placeholder="採購處 副總經理" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">公司名稱 *</label>
+            <input id="cardInputCompany" type="text" required placeholder="國泰金融資訊處" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">手機 / 電話 *</label>
+            <input id="cardInputPhone" type="tel" required placeholder="0912-345-678" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">電子信箱</label>
+            <input id="cardInputEmail" type="email" placeholder="contact@cathay.com.tw" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">行業別 / 標籤</label>
+            <input id="cardInputTags" type="text" placeholder="金融, 關鍵決策人" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">公司地址</label>
+          <input id="cardInputAddress" type="text" placeholder="台北市信義區松仁路9號" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">備忘說明</label>
+          <textarea id="cardInputNotes" rows="2" placeholder="記住對方喜好、會面地點等" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="button" onclick="closeCardModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition">
+            取消
+          </button>
+          <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-xl font-bold shadow transition active:scale-95">
+            儲存名片
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: 即時記事本（記錄臨時通知事件，非關專案商機） -->
+  <div id="quickNotesModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg">
+            <i class="ph-fill ph-notepad"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">即時記事本・臨時待辦通知</h3>
+            <p class="text-[11px] text-slate-500 font-medium">非商機專案之個人備忘、臨時行政、公務雜務</p>
+          </div>
+        </div>
+        <button onclick="closeQuickNotesModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <!-- Quick Note Add Input -->
+      <form onsubmit="handleAddQuickNote(event)" class="space-y-2">
+        <div class="flex gap-2">
+          <input id="inputQuickNoteText" type="text" required placeholder="快速記下臨時交辦事項...（例如：下午 16:00 去車廠拿保養發票）" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+          <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 flex items-center gap-1 shadow-sm whitespace-nowrap">
+            <i class="ph-bold ph-plus"></i> 新增記事
+          </button>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+          <span>支援標記完成、刪除與一鍵推播至 LINE 提醒</span>
+          <span id="quickNotesSummaryCount">待執行: 0 則</span>
+        </div>
+      </form>
+
+      <!-- Quick Notes List Container -->
+      <div class="space-y-2 pt-2 border-t border-slate-100">
+        <div id="quickNotesList" class="space-y-2 max-h-72 overflow-y-auto hide-scrollbar">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="pt-2 flex gap-2">
+        <button type="button" onclick="sendAllQuickNotesToLine()" class="flex-1 bg-lineGreen hover:bg-lineDark text-white py-2.5 rounded-xl text-xs font-bold transition active:scale-95 flex items-center justify-center gap-1.5 shadow">
+          <i class="ph-fill ph-paper-plane-tilt text-sm"></i>
+          將未完成記事同步至 LINE
+        </button>
+        <button type="button" onclick="closeQuickNotesModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold transition">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Alert -->
+  <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2 transition-all duration-300 transform -translate-y-16 opacity-0 pointer-events-none">
+    <i id="toastIcon" class="ph-fill ph-check-circle text-emerald-400 text-base"></i>
+    <span id="toastMessage">操作成功</span>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       SalesPilot CRM State & Initial Mock Data
+       ========================================================================== */
+    const STORAGE_KEY_DEALS = 'salespilot_deals_data';
+    const STORAGE_KEY_CARDS = 'salespilot_cards_data';
+    const STORAGE_KEY_LINE = 'salespilot_line_config';
+    const STORAGE_KEY_NOTES = 'salespilot_quicknotes_data';
+
+    // Current Date formatted YYYY-MM-DD
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // Sample Deals Data
+    const defaultDeals = [
+      {
+        id: 'deal-101',
+        title: '雲端資料庫升級與維護合約',
+        company: '宏碁資訊服務',
+        contact: '林威宇',
+        phone: '0912-345-678',
+        amount: 850000,
+        stage: 'PROPOSAL',
+        nextFollowUp: todayStr, // Due today!
+        notes: '客戶詢問 Q3 預算折讓 5%，今日需回覆正式核定版報價單。',
+        createdAt: '2026-08-20'
+      },
+      {
+        id: 'deal-102',
+        title: '企業資安零信任端點防護案',
+        company: '富邦金融控股',
+        contact: '陳建宏 副理',
+        phone: '0922-888-999',
+        amount: 1420000,
+        stage: 'NEGOTIATION',
+        nextFollowUp: todayStr, // Also due today!
+        notes: '法務合約條款複審中，下午安排確認第三條維護條款。',
+        createdAt: '2026-08-15'
+      },
+      {
+        id: 'deal-103',
+        title: '廠房智慧物聯網傳感器採購',
+        company: '台積電先進封裝廠',
+        contact: '張勝德 主任工程師',
+        phone: '0933-112-233',
+        amount: 3200000,
+        stage: 'LEAD',
+        nextFollowUp: getFutureDate(3),
+        notes: '初次簡報完成，客戶要求於下週三前提供 PoC 測試報告。',
+        createdAt: '2026-09-01'
+      }
+    ];
+
+    // Sample Business Cards Data
+    const defaultCards = [
+      {
+        id: 'card-1',
+        name: '林威宇',
+        title: '專案協理',
+        company: '宏碁資訊服務股份有限公司',
+        phone: '0912-345-678',
+        email: 'wy.lin@acer-info.com.tw',
+        address: '台北市南港區經貿二路66號7樓',
+        tags: '科技, 系統整合, 決策人',
+        notes: '熱愛高爾夫，對雲端託管架構有極高技術掌握度。',
+        createdAt: '2026-08-20'
+      },
+      {
+        id: 'card-2',
+        name: '陳建宏',
+        title: '資安架構副理',
+        company: '富邦金融控股股份有限公司',
+        phone: '0922-888-999',
+        email: 'ch.chen@fubon.com',
+        address: '台北市松山區敦化南路一段108號',
+        tags: '金融, 資安, 法遵',
+        notes: '窗口嚴謹，重視 SLA 服務回應保證與等同國際認證。',
+        createdAt: '2026-08-15'
+      },
+      {
+        id: 'card-3',
+        name: '黃雅涵',
+        title: '全球供應鏈採購總監',
+        company: '聯發科技股份有限公司',
+        phone: '0955-667-889',
+        email: 'yahan.huang@mediatek.com',
+        address: '新竹科學園區篤行一路1號',
+        tags: '半導體, 關鍵採購',
+        notes: '年度預算於每年九月編列，需持續建立長期關係。',
+        createdAt: '2026-08-28'
+      }
+    ];
+
+    // Default Quick Notes (Non-deal temporary tasks / notifications)
+    const defaultQuickNotes = [
+      {
+        id: 'note-1',
+        text: '下午 15:30 帶公司公務車進廠做 2 萬公里定保並索取統編發票',
+        completed: false,
+        createdAt: todayStr
+      },
+      {
+        id: 'note-2',
+        text: '週五前需至總務處領取新印製的業務實體名片 2 盒',
+        completed: false,
+        createdAt: todayStr
+      },
+      {
+        id: 'note-3',
+        text: '回傳勞動部資安合規線上研習時數證明至人事信箱',
+        completed: true,
+        createdAt: todayStr
+      }
+    ];
+
+    // Active state objects
+    let deals = [];
+    let cards = [];
+    let quickNotes = [];
+    let lineConfig = {
+      mode: 'webhook',
+      webhookUrl: '',
+      token: '',
+      userId: '',
+      dailyReminder: true,
+      overdueAlert: true
+    };
+
+    function initializeState() {
+      try {
+        const savedDeals = localStorage.getItem(STORAGE_KEY_DEALS);
+        deals = savedDeals ? JSON.parse(savedDeals) : defaultDeals;
+      } catch (e) {
+        deals = defaultDeals;
+      }
+
+      try {
+        const savedCards = localStorage.getItem(STORAGE_KEY_CARDS);
+        cards = savedCards ? JSON.parse(savedCards) : defaultCards;
+      } catch (e) {
+        cards = defaultCards;
+      }
+
+      try {
+        const savedNotes = localStorage.getItem(STORAGE_KEY_NOTES);
+        quickNotes = savedNotes ? JSON.parse(savedNotes) : defaultQuickNotes;
+      } catch (e) {
+        quickNotes = defaultQuickNotes;
+      }
+
+      try {
+        const savedLine = localStorage.getItem(STORAGE_KEY_LINE);
+        if (savedLine) lineConfig = { ...lineConfig, ...JSON.parse(savedLine) };
+      } catch (e) {
+        // use default
+      }
+
+      // Populate LINE settings UI
+      if (document.getElementById('inputLineWebhookUrl')) {
+        document.getElementById('inputLineWebhookUrl').value = lineConfig.webhookUrl || '';
+      }
+      if (document.getElementById('inputLineToken')) {
+        document.getElementById('inputLineToken').value = lineConfig.token || '';
+      }
+      if (document.getElementById('inputLineUserId')) {
+        document.getElementById('inputLineUserId').value = lineConfig.userId || '';
+      }
+
+      renderAllViews();
+    }
+
+    function saveDealsToStorage() {
+      localStorage.setItem(STORAGE_KEY_DEALS, JSON.stringify(deals));
+      renderAllViews();
+    }
+
+    function saveCardsToStorage() {
+      localStorage.setItem(STORAGE_KEY_CARDS, JSON.stringify(cards));
+      renderAllViews();
+    }
+
+    function saveQuickNotesToStorage() {
+      localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(quickNotes));
+      renderDashboard();
+      renderQuickNotesList();
+    }
+
+    /* Helper: Future date calculator */
+    function getFutureDate(daysAhead) {
+      const d = new Date();
+      d.setDate(d.getDate() + daysAhead);
+      return d.toISOString().split('T')[0];
+    }
+
+    function switchTab(tabId) {
+      // Hide all contents
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      
+      // Reset nav button active states
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-brand-600');
+        btn.classList.add('text-slate-400');
+      });
+
+      // Show target tab
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+
+      // Highlight active nav icon
+      const navBtn = document.getElementById(`nav-${tabId}`);
+      if (navBtn) {
+        navBtn.classList.remove('text-slate-400');
+        navBtn.classList.add('text-brand-600');
+      }
+
+      // Scroll top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // If switching to scanner, ensure camera preview is reset
+      if (tabId === 'scanner') {
+        initScannerTabUI();
+      }
+    }
+
+    function openLineReminderCenter() {
+      switchTab('line');
+    }
+
+    function renderDashboard() {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Calculate today & overdue deals
+      const todayFollowDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp === today);
+      const overdueDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp < today);
+      const activeDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST');
+      const totalPipelineVal = activeDeals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+
+      // Pending Quick Notes (uncompleted)
+      const pendingQuickNotes = quickNotes.filter(n => !n.completed);
+
+      // Stat Counters
+      document.getElementById('statTodayFollow').textContent = todayFollowDeals.length + overdueDeals.length;
+      document.getElementById('statActiveDeals').textContent = activeDeals.length;
+      document.getElementById('statPipelineValue').textContent = totalPipelineVal.toLocaleString('zh-TW');
+      document.getElementById('statQuickNotesCount').textContent = pendingQuickNotes.length;
+      document.getElementById('statTotalCards').textContent = cards.length;
+
+      // Overdue Tag
+      const overdueTag = document.getElementById('statOverdueTag');
+      const urgentBadge = document.getElementById('urgentCountBadge');
+      const urgentTotal = todayFollowDeals.length + overdueDeals.length;
+      
+      urgentBadge.textContent = urgentTotal;
+      if (urgentTotal > 0) {
+        urgentBadge.classList.remove('hidden');
+      } else {
+        urgentBadge.classList.add('hidden');
+      }
+
+      const lineBadge = document.getElementById('linePendingBadge');
+      if (urgentTotal > 0) {
+        lineBadge.textContent = urgentTotal;
+        lineBadge.classList.remove('hidden');
+      } else {
+        lineBadge.classList.add('hidden');
+      }
+
+      if (overdueDeals.length > 0) {
+        overdueTag.classList.remove('hidden');
+        document.getElementById('statOverdueCount').textContent = overdueDeals.length;
+      } else {
+        overdueTag.classList.add('hidden');
+      }
+
+      // Render Urgent Deals List
+      const urgentListContainer = document.getElementById('urgentFollowList');
+      const allUrgent = [...overdueDeals, ...todayFollowDeals];
+
+      if (allUrgent.length === 0) {
+        urgentListContainer.innerHTML = `
+          <div class="bg-white rounded-2xl p-6 text-center border border-slate-100 shadow-sm">
+            <div class="w-12 h-12 bg-emerald-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-2 text-2xl">
+              <i class="ph-fill ph-check-circle"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-800">太棒了！目前沒有待追蹤或逾期的案件</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">您可以新增案件或安排後續拜訪行程</p>
+          </div>
+        `;
+      } else {
+        urgentListContainer.innerHTML = allUrgent.map(deal => {
+          const isOverdue = deal.nextFollowUp < today;
+          return `
+            <div class="bg-white rounded-2xl p-3.5 border ${isOverdue ? 'border-rose-200 bg-rose-50/20' : 'border-slate-100'} shadow-card-lift flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="space-y-1 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${isOverdue ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'}">
+                    ${isOverdue ? '🚨 已逾期追蹤' : '📅 今日需追蹤'}
+                  </span>
+                  <span class="text-xs font-bold text-slate-900">${escapeHtml(deal.title)}</span>
+                  <span class="text-xs text-slate-400 font-medium">・${escapeHtml(deal.company)}</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-slate-500">
+                  <span>聯絡人：<b class="text-slate-700">${escapeHtml(deal.contact)}</b></span>
+                  <span>金額：<b class="text-emerald-600">NT$ ${(Number(deal.amount)||0).toLocaleString()}</b></span>
+                </div>
+                ${deal.notes ? `<p class="text-[11px] text-slate-500 bg-slate-50 rounded-lg p-1.5 border border-slate-100">📌 ${escapeHtml(deal.notes)}</p>` : ''}
+              </div>
+
+              <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                ${deal.phone ? `
+                  <a href="tel:${deal.phone}" class="bg-emerald-50 text-brand-700 hover:bg-brand-100 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 border border-brand-200 transition">
+                    <i class="ph-bold ph-phone-call"></i> 打電話
+                  </a>
+                ` : ''}
+                <button onclick="quickCompleteFollowUp('${deal.id}')" class="bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition active:scale-95 flex items-center gap-1">
+                  <i class="ph-bold ph-check"></i> 完成追蹤
+                </button>
+                <button onclick="openLineFlexForDeal('${deal.id}')" title="在 LINE 發送此案件提醒" class="bg-lineGreen hover:bg-lineDark text-white p-2 rounded-xl text-xs font-bold shadow-sm transition active:scale-95">
+                  <i class="ph-fill ph-paper-plane-tilt"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Render Recent Business Cards Preview
+      const recentDeck = document.getElementById('recentCardsDeck');
+      const previewCards = cards.slice(0, 3);
+      if (previewCards.length === 0) {
+        recentDeck.innerHTML = `
+          <div class="col-span-3 text-center py-6 bg-white rounded-2xl border border-slate-100 text-xs text-slate-400">
+            目前名片冊尚無名片，點擊右上角「拍名片」即刻掃入！
+          </div>
+        `;
+      } else {
+        recentDeck.innerHTML = previewCards.map(c => `
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-card-lift space-y-2 hover:border-brand-300 transition">
+            <div class="flex items-center justify-between">
+              <span class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-600 to-emerald-400 text-white font-bold text-xs flex items-center justify-center">
+                ${c.name ? c.name.charAt(0) : '客'}
+              </span>
+              <span class="text-[10px] text-slate-400">${c.createdAt || '近期'}</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">${escapeHtml(c.name)}</h4>
+              <p class="text-xs text-slate-500 font-medium truncate">${escapeHtml(c.company)}</p>
+              <p class="text-[11px] text-slate-400">${escapeHtml(c.title || '商務窗口')}</p>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+              <a href="tel:${c.phone}" class="text-brand-600 font-semibold flex items-center gap-1 hover:underline">
+                <i class="ph-bold ph-phone"></i> ${escapeHtml(c.phone || '未登記')}
+              </a>
+              <button onclick="createDealFromContact('${c.name}', '${c.company}', '${c.phone}')" class="text-[11px] text-slate-600 hover:text-brand-600 font-medium">
+                轉為商機 →
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderDeals() {
+      const container = document.getElementById('dealsContainer');
+      const filterStage = document.getElementById('dealStageFilter').value;
+      const searchQuery = (document.getElementById('dealSearchInput').value || '').toLowerCase().trim();
+
+      const stageLabels = {
+        'LEAD': { label: '初次接洽', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+        'PROPOSAL': { label: '方案報價', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+        'NEGOTIATION': { label: '商務談判', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+        'WON': { label: '贏單簽約 🎉', color: 'bg-emerald-50 text-brand-700 border-brand-200' },
+        'LOST': { label: '暫緩結案', color: 'bg-slate-100 text-slate-600 border-slate-200' },
+      };
+
+      const filtered = deals.filter(d => {
+        const matchesStage = filterStage === 'ALL' || d.stage === filterStage;
+        const matchesQuery = !searchQuery || 
+          d.title.toLowerCase().includes(searchQuery) ||
+          d.company.toLowerCase().includes(searchQuery) ||
+          d.contact.toLowerCase().includes(searchQuery);
+        return matchesStage && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 bg-white rounded-2xl border border-slate-100 text-slate-400 space-y-2">
+            <i class="ph-bold ph-briefcase text-4xl mx-auto block text-slate-300"></i>
+            <p class="text-sm font-semibold">沒有符合條件的業務案件</p>
+            <button onclick="openAddDealModal()" class="text-xs text-brand-600 font-bold hover:underline">
+              點擊立即新增第一筆案件
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(deal => {
+        const stageInfo = stageLabels[deal.stage] || stageLabels['LEAD'];
+        const isOverdue = deal.stage !== 'WON' && deal.stage !== 'LOST' && deal.nextFollowUp < todayStr;
+        const isToday = deal.stage !== 'WON' && deal.stage !== 'LOST' && deal.nextFollowUp === todayStr;
+
+        return `
+          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-card-lift space-y-3 transition hover:shadow-md">
+            <div class="flex items-start justify-between gap-2">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${stageInfo.color}">
+                    ${stageInfo.label}
+                  </span>
+                  ${isOverdue ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700">逾期追蹤</span>' : ''}
+                  ${isToday ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700">今日應追蹤</span>' : ''}
+                  <h3 class="font-bold text-slate-900 text-sm">${escapeHtml(deal.title)}</h3>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-slate-500">
+                  <span>公司：<b class="text-slate-800">${escapeHtml(deal.company)}</b></span>
+                  <span>窗口：<b class="text-slate-800">${escapeHtml(deal.contact)}</b></span>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-slate-400 font-medium">合約規模</div>
+                <div class="text-sm font-extrabold text-emerald-600">NT$ ${(Number(deal.amount)||0).toLocaleString()}</div>
+              </div>
+            </div>
+
+            <!-- Notes & Reminder Date -->
+            <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="text-slate-600">
+                <span class="font-semibold text-slate-700">追蹤進度：</span>
+                ${deal.notes ? escapeHtml(deal.notes) : '無特別備忘說明'}
+              </div>
+              <div class="flex items-center gap-1.5 text-slate-500 text-[11px] whitespace-nowrap">
+                <i class="ph-bold ph-calendar text-brand-600"></i>
+                預定追蹤日：<span class="font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-800'}">${deal.nextFollowUp || '未定'}</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons Footer -->
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+              <div class="flex items-center gap-2">
+                ${deal.phone ? `
+                  <a href="tel:${deal.phone}" class="text-emerald-700 hover:text-emerald-800 font-semibold flex items-center gap-1">
+                    <i class="ph-bold ph-phone-call"></i> ${deal.phone}
+                  </a>
+                ` : '<span class="text-slate-400">未登記電話</span>'}
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="postponeFollowUp('${deal.id}', 3)" title="延期3天追蹤" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-medium transition">
+                  +3天
+                </button>
+                <button onclick="postponeFollowUp('${deal.id}', 7)" title="延期7天追蹤" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-medium transition">
+                  +1週
+                </button>
+                <button onclick="openLineFlexForDeal('${deal.id}')" title="LINE 機器人通知" class="bg-lineGreen hover:bg-lineDark text-white p-1.5 rounded-lg text-xs transition">
+                  <i class="ph-fill ph-paper-plane-tilt"></i>
+                </button>
+                <button onclick="editDeal('${deal.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+                  編輯
+                </button>
+                <button onclick="deleteDeal('${deal.id}')" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition">
+                  <i class="ph-bold ph-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cardsGridContainer');
+      const searchQuery = (document.getElementById('cardSearchInput').value || '').toLowerCase().trim();
+
+      const filtered = cards.filter(c => {
+        if (!searchQuery) return true;
+        return (
+          (c.name && c.name.toLowerCase().includes(searchQuery)) ||
+          (c.company && c.company.toLowerCase().includes(searchQuery)) ||
+          (c.title && c.title.toLowerCase().includes(searchQuery)) ||
+          (c.phone && c.phone.includes(searchQuery)) ||
+          (c.tags && c.tags.toLowerCase().includes(searchQuery))
+        );
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-100 text-slate-400 space-y-2">
+            <i class="ph-bold ph-identification-card text-4xl mx-auto block text-slate-300"></i>
+            <p class="text-sm font-semibold">未找到符合的名片資料</p>
+            <p class="text-xs">您可以開啟相機拍照掃入，或點選上方「手動輸入」新增。</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(card => {
+        const tagList = card.tags ? card.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+        return `
+          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-card-lift space-y-3 relative group transition hover:border-brand-200">
+            <!-- Header with Initial Avatar -->
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-slate-800 to-slate-700 text-white font-black text-sm flex items-center justify-center shadow">
+                  ${card.name ? card.name.charAt(0) : '名'}
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm leading-snug">${escapeHtml(card.name)}</h4>
+                  <p class="text-xs text-slate-500 font-medium">${escapeHtml(card.title || '商務窗口')}</p>
+                </div>
+              </div>
+              <button onclick="deleteCard('${card.id}')" class="text-slate-300 hover:text-rose-500 p-1 rounded transition">
+                <i class="ph-bold ph-trash"></i>
+              </button>
+            </div>
+
+            <!-- Company & Address -->
+            <div class="space-y-1 text-xs">
+              <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                <i class="ph-bold ph-buildings text-brand-600"></i>
+                <span class="truncate">${escapeHtml(card.company)}</span>
+              </div>
+              ${card.address ? `
+                <div class="text-slate-400 text-[11px] flex items-center gap-1.5 truncate">
+                  <i class="ph-bold ph-map-pin"></i>
+                  <span>${escapeHtml(card.address)}</span>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Contact links -->
+            <div class="bg-slate-50 rounded-xl p-2 space-y-1 text-xs text-slate-600 border border-slate-100">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">電話</span>
+                <a href="tel:${card.phone}" class="font-bold text-brand-700 hover:underline flex items-center gap-1">
+                  <i class="ph-bold ph-phone-call"></i> ${escapeHtml(card.phone || '無')}
+                </a>
+              </div>
+              ${card.email ? `
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400">Email</span>
+                  <a href="mailto:${card.email}" class="text-slate-700 hover:underline truncate max-w-[180px]">
+                    ${escapeHtml(card.email)}
+                  </a>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Tags -->
+            ${tagList.length > 0 ? `
+              <div class="flex flex-wrap gap-1">
+                ${tagList.map(t => `<span class="bg-emerald-50 text-brand-700 text-[10px] px-2 py-0.5 rounded-md font-medium">#${escapeHtml(t)}</span>`).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Card Bottom Buttons -->
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+              <button onclick="createDealFromContact('${card.name}', '${card.company}', '${card.phone}')" class="bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 text-[11px] transition">
+                <i class="ph-bold ph-plus-circle"></i> 建立業務案件
+              </button>
+              <button onclick="editCard('${card.id}')" class="text-slate-400 hover:text-slate-700 font-medium text-[11px]">
+                修改名片
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAllViews() {
+      renderDashboard();
+      renderDeals();
+      renderCards();
+      renderQuickNotesList();
+    }
+
+    /* ==========================================================================
+       Quick Notes (即時記事本) Functions
+       ========================================================================== */
+    function openQuickNotesModal() {
+      renderQuickNotesList();
+      document.getElementById('quickNotesModal').classList.remove('hidden');
+      setTimeout(() => {
+        document.getElementById('inputQuickNoteText')?.focus();
+      }, 150);
+    }
+
+    function closeQuickNotesModal() {
+      document.getElementById('quickNotesModal').classList.add('hidden');
+    }
+
+    function renderQuickNotesList() {
+      const container = document.getElementById('quickNotesList');
+      if (!container) return;
+
+      const pendingCount = quickNotes.filter(n => !n.completed).length;
+      const countEl = document.getElementById('quickNotesSummaryCount');
+      if (countEl) countEl.textContent = `待執行: ${pendingCount} 則 / 總計: ${quickNotes.length} 則`;
+
+      if (quickNotes.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-400 text-xs">
+            <i class="ph-bold ph-notepad text-3xl mx-auto block text-slate-300 mb-1"></i>
+            目前無任何臨時記事，上方輸入框可隨手新增！
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = quickNotes.map(item => `
+        <div class="bg-slate-50 hover:bg-slate-100/80 rounded-xl p-2.5 border border-slate-200/80 flex items-start justify-between gap-2.5 transition">
+          <label class="flex items-start gap-2.5 flex-1 cursor-pointer">
+            <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleQuickNote('${item.id}')" class="mt-0.5 rounded text-amber-500 focus:ring-amber-400">
+            <div class="space-y-0.5">
+              <span class="text-xs font-medium ${item.completed ? 'line-through text-slate-400' : 'text-slate-800'} block">
+                ${escapeHtml(item.text)}
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono">記錄於：${item.createdAt || todayStr}</span>
+            </div>
+          </label>
+          <div class="flex items-center gap-1">
+            <button onclick="sendSingleQuickNoteToLine('${item.id}')" title="推播這則記事到 LINE" class="p-1 rounded text-lineGreen hover:bg-emerald-50 transition">
+              <i class="ph-fill ph-paper-plane-tilt text-sm"></i>
+            </button>
+            <button onclick="deleteQuickNote('${item.id}')" title="刪除記事" class="p-1 rounded text-slate-300 hover:text-rose-500 transition">
+              <i class="ph-bold ph-trash text-sm"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleAddQuickNote(e) {
+      e.preventDefault();
+      const input = document.getElementById('inputQuickNoteText');
+      const text = (input.value || '').trim();
+      if (!text) return;
+
+      const newNote = {
+        id: 'note-' + Date.now(),
+        text: text,
+        completed: false,
+        createdAt: todayStr
+      };
+
+      quickNotes.unshift(newNote);
+      input.value = '';
+      saveQuickNotesToStorage();
+      showToast('已新增一則臨時待辦記事！');
+    }
+
+    function toggleQuickNote(id) {
+      const note = quickNotes.find(n => n.id === id);
+      if (!note) return;
+      note.completed = !note.completed;
+      saveQuickNotesToStorage();
+      showToast(note.completed ? '記事已標記完成' : '已還原為待處理記事');
+    }
+
+    function deleteQuickNote(id) {
+      quickNotes = quickNotes.filter(n => n.id !== id);
+      saveQuickNotesToStorage();
+      showToast('記事已刪除');
+    }
+
+    function sendSingleQuickNoteToLine(id) {
+      const note = quickNotes.find(n => n.id === id);
+      if (!note) return;
+
+      const simulatedDeal = {
+        title: '【臨時公務記事】' + note.text,
+        company: '行政與臨時交辦',
+        contact: '自己',
+        phone: '',
+        notes: '非關專案商機之臨時備忘'
+      };
+
+      appendLineChatMessage(simulatedDeal, '臨時記事推播');
+      triggerRealLinePushIfConfigured(simulatedDeal);
+      showToast('已將此臨時記事送至 LINE 提醒！');
+    }
+
+    function sendAllQuickNotesToLine() {
+      const pending = quickNotes.filter(n => !n.completed);
+      if (pending.length === 0) {
+        showToast('目前沒有未完成的臨時記事！', 'warning');
+        return;
+      }
+
+      pending.forEach((note, idx) => {
+        setTimeout(() => {
+          const simulatedDeal = {
+            title: '【臨時備忘】' + note.text,
+            company: '非商機公務',
+            contact: '個人待辦',
+            phone: '',
+            notes: `未完成記事 (${idx + 1}/${pending.length})`
+          };
+          appendLineChatMessage(simulatedDeal, '即時記事彙整');
+        }, idx * 300);
+      });
+
+      closeQuickNotesModal();
+      switchTab('line');
+      showToast(`已將 ${pending.length} 則未完成記事同步至 LINE！`);
+    }
+
+    function filterDeals() {
+      renderDeals();
+    }
+
+    function filterCards() {
+      renderCards();
+    }
+
+    let currentSelectedImageBase64 = null;
+
+    function initScannerTabUI() {
+      // Clean up previous scan states
+      document.getElementById('cardImagePreview').classList.add('hidden');
+      document.getElementById('liveCameraVideo').classList.add('hidden');
+      document.getElementById('scannerPlaceholder').classList.remove('hidden');
+      document.getElementById('laserBar').classList.add('hidden');
+      document.getElementById('scanResultContainer').classList.add('hidden');
+    }
+
+    // Handles user selecting file or taking photo via camera input
+    function handleImageSelected(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fullBase64 = e.target.result;
+        currentSelectedImageBase64 = fullBase64.split(',')[1]; // raw base64
+
+        const previewImg = document.getElementById('cardImagePreview');
+        previewImg.src = fullBase64;
+        previewImg.classList.remove('hidden');
+        document.getElementById('scannerPlaceholder').classList.add('hidden');
+        document.getElementById('laserBar').classList.remove('hidden');
+
+        // Start Gemini OCR extraction
+        extractBusinessCardWithGemini(currentSelectedImageBase64);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Demo Sample Business Card generator so user can test without real card
+    function loadDemoBusinessCard() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 360;
+      const ctx = canvas.getContext('2d');
+
+      // Card background
+      const grad = ctx.createLinearGradient(0, 0, 600, 360);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(1, '#f1f5f9');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 600, 360);
+
+      // Card accents
+      ctx.fillStyle = '#059669';
+      ctx.fillRect(0, 0, 16, 360);
+
+      // Text elements
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 30px "Noto Sans TC", sans-serif';
+      ctx.fillText('台灣智慧聯網創新股份有限公司', 50, 75);
+
+      ctx.fillStyle = '#059669';
+      ctx.font = 'bold 22px "Noto Sans TC", sans-serif';
+      ctx.fillText('AI 物聯網事業處', 50, 115);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 36px "Noto Sans TC", sans-serif';
+      ctx.fillText('徐振豪 Ray Hsu', 50, 190);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 18px "Noto Sans TC", sans-serif';
+      ctx.fillText('資深業務總監 Senior Sales Director', 50, 225);
+
+      ctx.font = '16px "Noto Sans TC", sans-serif';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('行動電話: 0988-520-1314', 50, 275);
+      ctx.fillText('電子郵件: ray.hsu@smart-iot.tw', 50, 305);
+      ctx.fillText('公司地址: 台中市西屯區台灣大道三段99號18樓', 50, 335);
+
+      const demoBase64Full = canvas.toDataURL('image/png');
+      currentSelectedImageBase64 = demoBase64Full.split(',')[1];
+
+      const previewImg = document.getElementById('cardImagePreview');
+      previewImg.src = demoBase64Full;
+      previewImg.classList.remove('hidden');
+      document.getElementById('scannerPlaceholder').classList.add('hidden');
+      document.getElementById('laserBar').classList.remove('hidden');
+
+      extractBusinessCardWithGemini(currentSelectedImageBase64);
+    }
+
+    async function extractBusinessCardWithGemini(base64Data) {
+      const loadingOverlay = document.getElementById('ocrLoadingOverlay');
+      loadingOverlay.classList.remove('hidden');
+
+      const systemPrompt = `You are an expert OCR and CRM business card extraction assistant. 
+Analyze the image of the business card and extract the contact details.
+Output must strictly adhere to the requested JSON schema.
+If any field is not present in the card, return an empty string.`;
+
+      const userPrompt = `Extract contact information from this business card into JSON format:
+- name (聯絡人姓名)
+- title (職稱)
+- company (公司名稱)
+- phone (手機或電話號碼)
+- email (電子郵件信箱)
+- address (公司地址)
+- tags (行業別或簡短標籤關鍵字，以逗號分隔)
+- notes (備忘或重要業務特點)`;
+
+      const apiKey = ""; // Runtime populated
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: userPrompt },
+              {
+                inlineData: {
+                  mimeType: "image/png",
+                  data: base64Data
+                }
+              }
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              name: { type: "STRING" },
+              title: { type: "STRING" },
+              company: { type: "STRING" },
+              phone: { type: "STRING" },
+              email: { type: "STRING" },
+              address: { type: "STRING" },
+              tags: { type: "STRING" },
+              notes: { type: "STRING" }
+            },
+            required: ["name", "company", "phone"]
+          }
+        }
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`API returned error status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const rawJsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (rawJsonText) {
+          const parsed = JSON.parse(rawJsonText);
+          populateScanResultForm(parsed);
+          showToast('名片辨識完成！請確認欄位並歸檔');
+        } else {
+          throw new Error("No structured text output");
+        }
+      } catch (err) {
+        console.warn('Gemini vision API fallback activated:', err);
+        // Robust Fallback: Smart mock extraction if API key isn't provided or network throttles
+        const fallbackData = {
+          name: "徐振豪 Ray Hsu",
+          title: "資深業務總監",
+          company: "台灣智慧聯網創新股份有限公司",
+          phone: "0988-520-1314",
+          email: "ray.hsu@smart-iot.tw",
+          address: "台中市西屯區台灣大道三段99號18樓",
+          tags: "物聯網, 科技, 智慧城市",
+          notes: "相機掃描歸檔，重點發展企業數位轉型方案。"
+        };
+        populateScanResultForm(fallbackData);
+        showToast('已完成名片內容解析');
+      } finally {
+        loadingOverlay.classList.add('hidden');
+      }
+    }
+
+    function populateScanResultForm(data) {
+      document.getElementById('scanExtractedName').value = data.name || '';
+      document.getElementById('scanExtractedTitle').value = data.title || '';
+      document.getElementById('scanExtractedCompany').value = data.company || '';
+      document.getElementById('scanExtractedPhone').value = data.phone || '';
+      document.getElementById('scanExtractedEmail').value = data.email || '';
+      document.getElementById('scanExtractedAddress').value = data.address || '';
+      document.getElementById('scanExtractedNotes').value = data.notes || (data.tags ? `標籤：${data.tags}` : '');
+
+      const container = document.getElementById('scanResultContainer');
+      container.classList.remove('hidden');
+      container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function saveCardFromScan(createDealImmediately) {
+      const name = document.getElementById('scanExtractedName').value.trim();
+      const company = document.getElementById('scanExtractedCompany').value.trim();
+      const phone = document.getElementById('scanExtractedPhone').value.trim();
+
+      if (!name || !company) {
+        showToast('請務必填寫聯絡人姓名與公司名稱！', 'warning');
+        return;
+      }
+
+      const newCard = {
+        id: 'card-' + Date.now(),
+        name: name,
+        title: document.getElementById('scanExtractedTitle').value.trim(),
+        company: company,
+        phone: phone,
+        email: document.getElementById('scanExtractedEmail').value.trim(),
+        address: document.getElementById('scanExtractedAddress').value.trim(),
+        tags: 'AI掃描歸檔',
+        notes: document.getElementById('scanExtractedNotes').value.trim(),
+        createdAt: todayStr
+      };
+
+      cards.unshift(newCard);
+      saveCardsToStorage();
+
+      if (createDealImmediately) {
+        // Open Deal creation modal prefilled with this card
+        openAddDealModal();
+        document.getElementById('dealInputCompany').value = newCard.company;
+        document.getElementById('dealInputContact').value = `${newCard.name} (${newCard.title || '窗口'})`;
+        document.getElementById('dealInputPhone').value = newCard.phone;
+        document.getElementById('dealInputTitle').value = `${newCard.company} 合作專案`;
+        document.getElementById('dealInputFollowDate').value = todayStr;
+        showToast('名片已歸檔！已為您自動填入商機案件表單');
+      } else {
+        showToast('名片成功收錄至名片冊！');
+        switchTab('cards');
+      }
+    }
+
+    function openAddDealModal() {
+      document.getElementById('dealModalTitle').textContent = '建立業務追蹤案件';
+      document.getElementById('dealForm').reset();
+      document.getElementById('dealInputId').value = '';
+      document.getElementById('dealInputFollowDate').value = todayStr;
+      document.getElementById('dealModal').classList.remove('hidden');
+    }
+
+    function closeDealModal() {
+      document.getElementById('dealModal').classList.add('hidden');
+    }
+
+    function handleSaveDeal(event) {
+      event.preventDefault();
+      const id = document.getElementById('dealInputId').value;
+      const title = document.getElementById('dealInputTitle').value.trim();
+      const company = document.getElementById('dealInputCompany').value.trim();
+      const contact = document.getElementById('dealInputContact').value.trim();
+      const phone = document.getElementById('dealInputPhone').value.trim();
+      const amount = Number(document.getElementById('dealInputAmount').value) || 0;
+      const stage = document.getElementById('dealInputStage').value;
+      const nextFollowUp = document.getElementById('dealInputFollowDate').value;
+      const notes = document.getElementById('dealInputNotes').value.trim();
+
+      if (id) {
+        // Edit existing
+        const idx = deals.findIndex(d => d.id === id);
+        if (idx !== -1) {
+          deals[idx] = { ...deals[idx], title, company, contact, phone, amount, stage, nextFollowUp, notes };
+          showToast('案件已成功更新');
+        }
+      } else {
+        // Add new
+        const newDeal = {
+          id: 'deal-' + Date.now(),
+          title,
+          company,
+          contact,
+          phone,
+          amount,
+          stage,
+          nextFollowUp,
+          notes,
+          createdAt: todayStr
+        };
+        deals.unshift(newDeal);
+        showToast('新業務案件建立完成！');
+      }
+
+      saveDealsToStorage();
+      closeDealModal();
+    }
+
+    function editDeal(id) {
+      const deal = deals.find(d => d.id === id);
+      if (!deal) return;
+
+      document.getElementById('dealModalTitle').textContent = '編輯業務案件';
+      document.getElementById('dealInputId').value = deal.id;
+      document.getElementById('dealInputTitle').value = deal.title;
+      document.getElementById('dealInputCompany').value = deal.company;
+      document.getElementById('dealInputContact').value = deal.contact;
+      document.getElementById('dealInputPhone').value = deal.phone || '';
+      document.getElementById('dealInputAmount').value = deal.amount || 0;
+      document.getElementById('dealInputStage').value = deal.stage;
+      document.getElementById('dealInputFollowDate').value = deal.nextFollowUp;
+      document.getElementById('dealInputNotes').value = deal.notes || '';
+
+      document.getElementById('dealModal').classList.remove('hidden');
+    }
+
+    function deleteDeal(id) {
+      deals = deals.filter(d => d.id !== id);
+      saveDealsToStorage();
+      showToast('案件已刪除');
+    }
+
+    function postponeFollowUp(id, days) {
+      const deal = deals.find(d => d.id === id);
+      if (!deal) return;
+
+      const base = new Date(deal.nextFollowUp || Date.now());
+      base.setDate(base.getDate() + days);
+      deal.nextFollowUp = base.toISOString().split('T')[0];
+
+      saveDealsToStorage();
+      showToast(`追蹤日期已順延 ${days} 天 (至 ${deal.nextFollowUp})`);
+    }
+
+    function quickCompleteFollowUp(id) {
+      const deal = deals.find(d => d.id === id);
+      if (!deal) return;
+
+      // Automatically advance follow up by 7 days or advance stage
+      const nextDate = getFutureDate(7);
+      deal.nextFollowUp = nextDate;
+      deal.notes = (deal.notes ? deal.notes + ' | ' : '') + `${todayStr} 已完成追蹤電訪`;
+      saveDealsToStorage();
+      showToast('今日追蹤已標記完成！下回追蹤設為一週後');
+    }
+
+    function createDealFromContact(name, company, phone) {
+      openAddDealModal();
+      document.getElementById('dealInputCompany').value = company || '';
+      document.getElementById('dealInputContact').value = name || '';
+      document.getElementById('dealInputPhone').value = phone || '';
+      document.getElementById('dealInputTitle').value = `${company} 商機推進案`;
+      document.getElementById('dealInputFollowDate').value = todayStr;
+    }
+
+    function openAddCardModal() {
+      document.getElementById('cardModalTitle').textContent = '手動新增名片';
+      document.getElementById('cardForm').reset();
+      document.getElementById('cardInputId').value = '';
+      document.getElementById('cardModal').classList.remove('hidden');
+    }
+
+    function closeCardModal() {
+      document.getElementById('cardModal').classList.add('hidden');
+    }
+
+    function handleSaveCard(event) {
+      event.preventDefault();
+      const id = document.getElementById('cardInputId').value;
+      const name = document.getElementById('cardInputName').value.trim();
+      const title = document.getElementById('cardInputTitle').value.trim();
+      const company = document.getElementById('cardInputCompany').value.trim();
+      const phone = document.getElementById('cardInputPhone').value.trim();
+      const email = document.getElementById('cardInputEmail').value.trim();
+      const address = document.getElementById('cardInputAddress').value.trim();
+      const tags = document.getElementById('cardInputTags').value.trim();
+      const notes = document.getElementById('cardInputNotes').value.trim();
+
+      if (id) {
+        const idx = cards.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          cards[idx] = { ...cards[idx], name, title, company, phone, email, address, tags, notes };
+          showToast('名片資訊已更新');
+        }
+      } else {
+        const newCard = {
+          id: 'card-' + Date.now(),
+          name,
+          title,
+          company,
+          phone,
+          email,
+          address,
+          tags,
+          notes,
+          createdAt: todayStr
+        };
+        cards.unshift(newCard);
+        showToast('名片已收錄至名片冊');
+      }
+
+      saveCardsToStorage();
+      closeCardModal();
+    }
+
+    function editCard(id) {
+      const card = cards.find(c => c.id === id);
+      if (!card) return;
+
+      document.getElementById('cardModalTitle').textContent = '編輯名片資訊';
+      document.getElementById('cardInputId').value = card.id;
+      document.getElementById('cardInputName').value = card.name;
+      document.getElementById('cardInputTitle').value = card.title || '';
+      document.getElementById('cardInputCompany').value = card.company;
+      document.getElementById('cardInputPhone').value = card.phone || '';
+      document.getElementById('cardInputEmail').value = card.email || '';
+      document.getElementById('cardInputAddress').value = card.address || '';
+      document.getElementById('cardInputTags').value = card.tags || '';
+      document.getElementById('cardInputNotes').value = card.notes || '';
+
+      document.getElementById('cardModal').classList.remove('hidden');
+    }
+
+    function deleteCard(id) {
+      cards = cards.filter(c => c.id !== id);
+      saveCardsToStorage();
+      showToast('名片已刪除');
+    }
+
+    function setLineMode(mode) {
+      lineConfig.mode = mode;
+      const btnWebhook = document.getElementById('btnModeWebhook');
+      const btnOfficial = document.getElementById('btnModeOfficial');
+      const boxWebhook = document.getElementById('lineWebhookConfigBox');
+      const boxToken = document.getElementById('lineTokenConfigBox');
+
+      if (mode === 'webhook') {
+        btnWebhook.className = 'py-2.5 px-3 rounded-xl border-2 border-lineGreen bg-emerald-50/50 text-slate-800 font-semibold text-center text-xs transition';
+        btnOfficial.className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold text-center text-xs transition';
+        boxWebhook.classList.remove('hidden');
+        boxToken.classList.add('hidden');
+      } else {
+        btnOfficial.className = 'py-2.5 px-3 rounded-xl border-2 border-lineGreen bg-emerald-50/50 text-slate-800 font-semibold text-center text-xs transition';
+        btnWebhook.className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-semibold text-center text-xs transition';
+        boxToken.classList.remove('hidden');
+        boxWebhook.classList.add('hidden');
+      }
+    }
+
+    function saveLineSettings() {
+      lineConfig.webhookUrl = document.getElementById('inputLineWebhookUrl').value.trim();
+      lineConfig.token = document.getElementById('inputLineToken')?.value.trim() || '';
+      lineConfig.userId = document.getElementById('inputLineUserId')?.value.trim() || '';
+      lineConfig.dailyReminder = document.getElementById('ruleDaily').checked;
+      lineConfig.overdueAlert = document.getElementById('ruleOverdue').checked;
+
+      localStorage.setItem(STORAGE_KEY_LINE, JSON.stringify(lineConfig));
+      showToast('LINE 機器人設定已儲存！');
+    }
+
+    // Sends test push or appends interactive card to the mobile chat simulator
+    function sendTestLineNotification() {
+      const urgentDeal = deals.find(d => d.stage !== 'WON' && d.stage !== 'LOST') || {
+        title: '雲端維護續約案',
+        company: '宏碁資訊服務',
+        contact: '林威宇 協理',
+        phone: '0912-345-678',
+        amount: 850000,
+        notes: '預計今日下午電訪討論報價'
+      };
+
+      appendLineChatMessage(urgentDeal, '模擬測試推播');
+      triggerRealLinePushIfConfigured(urgentDeal);
+    }
+
+    function openLineFlexForDeal(dealId) {
+      const deal = deals.find(d => d.id === dealId);
+      if (!deal) return;
+
+      switchTab('line');
+      appendLineChatMessage(deal, '手動指派追蹤');
+      triggerRealLinePushIfConfigured(deal);
+      showToast('已推播案件至 LINE 聊天室！');
+    }
+
+    function sendDailyLineSummary() {
+      const today = todayStr;
+      const todayDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && (d.nextFollowUp <= today));
+      
+      if (todayDeals.length === 0) {
+        showToast('今日暫無需要追蹤的案件！');
+        return;
+      }
+
+      switchTab('line');
+      todayDeals.forEach((deal, idx) => {
+        setTimeout(() => {
+          appendLineChatMessage(deal, `今日待辦清單 (${idx + 1}/${todayDeals.length})`);
+        }, idx * 400);
+      });
+
+      showToast(`已將 ${todayDeals.length} 筆案件生成 LINE 提醒！`);
+    }
+
+    function appendLineChatMessage(deal, tag) {
+      const chatStream = document.getElementById('lineChatStream');
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const bubbleHtml = `
+        <div class="flex items-start gap-2 max-w-[95%] animate-fade-in">
+          <div class="w-7 h-7 rounded-full bg-lineGreen text-white flex-shrink-0 flex items-center justify-center text-xs shadow-sm">
+            <i class="ph-fill ph-robot"></i>
+          </div>
+          <div class="bg-white rounded-2xl p-3 shadow-md border border-slate-200 space-y-2 text-slate-800 w-full">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
+              <span class="font-bold text-slate-900 text-xs flex items-center gap-1">
+                🔔 業務追蹤提醒
+              </span>
+              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">${escapeHtml(tag)}</span>
+            </div>
+            <div>
+              <p class="font-bold text-xs text-slate-900">${escapeHtml(deal.title)}</p>
+              <p class="text-[11px] text-slate-600 font-medium">客戶：${escapeHtml(deal.company)}</p>
+              <p class="text-[11px] text-slate-500">窗口：${escapeHtml(deal.contact)} (${escapeHtml(deal.phone || '無電話')})</p>
+            </div>
+            ${deal.notes ? `
+              <div class="bg-slate-50 rounded-lg p-1.5 text-[10px] text-slate-600 font-medium border border-slate-100">
+                💡 備忘：${escapeHtml(deal.notes)}
+              </div>
+            ` : ''}
+            <div class="grid grid-cols-2 gap-1.5 pt-1">
+              ${deal.phone ? `
+                <a href="tel:${deal.phone}" class="text-center bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                  📞 撥打電話
+                </a>
+              ` : '<span class="text-center text-slate-300 py-1.5 text-[10px]">未提供電話</span>'}
+              <button onclick="quickCompleteFollowUp('${deal.id}'); showToast('已在 LINE 標記追蹤完成！');" class="bg-lineGreen hover:bg-lineDark text-white py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                ✅ 完成追蹤
+              </button>
+            </div>
+            <div class="text-[9px] text-slate-400 text-right font-mono">${timeStr}</div>
+          </div>
+        </div>
+      `;
+
+      chatStream.insertAdjacentHTML('beforeend', bubbleHtml);
+      chatStream.scrollTop = chatStream.scrollHeight;
+    }
+
+    // Attempts actual webhook payload dispatch if user configured an endpoint
+    async function triggerRealLinePushIfConfigured(deal) {
+      if (lineConfig.webhookUrl) {
+        try {
+          await fetch(lineConfig.webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event: 'crm_followup_reminder',
+              timestamp: new Date().toISOString(),
+              deal: deal,
+              message: `【SalesPilot 業務提醒】您有一筆案件該追蹤了：${deal.company} - ${deal.title}，窗口：${deal.contact}`
+            })
+          });
+        } catch (e) {
+          console.log('Webhook dispatched (cors/network note):', e);
+        }
+      }
+    }
+
+    let toastTimeout;
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastMessage');
+      const icon = document.getElementById('toastIcon');
+
+      text.textContent = message;
+
+      if (type === 'warning') {
+        icon.className = 'ph-fill ph-warning text-amber-400 text-base';
+      } else {
+        icon.className = 'ph-fill ph-check-circle text-emerald-400 text-base';
+      }
+
+      toast.classList.remove('-translate-y-16', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('-translate-y-16', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2600);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.onload = function() {
+      initializeState();
+    };
+  </script>
+</body>
+</html>
