@@ -33,7 +33,7 @@
     }
   </script>
 
-  <!-- Phosphor Icons -->
+  <!-- Phosphor Icons CDN -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
@@ -56,7 +56,7 @@
   <!-- TOP HEADER BAR -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
     <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
-      <!-- Brand Logo & Name -->
+      <!-- Brand Logo & Home Shortcut -->
       <div class="flex items-center space-x-2 cursor-pointer" onclick="switchTab('overview')">
         <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-700 to-emerald-500 flex items-center justify-center text-white shadow-sm shadow-emerald-500/30">
           <i class="ph-bold ph-compass text-lg"></i>
@@ -75,7 +75,7 @@
           <span class="hidden sm:inline">新增名片</span>
         </button>
 
-        <!-- 2. Settings Icon: Unified Config (OCR, Google Sheet, LINE) -->
+        <!-- 2. Settings Gear Icon: Unified Config (OCR, Google Sheet, LINE) -->
         <button onclick="openSettingsModal()" class="flex items-center gap-1 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-2 rounded-xl text-xs font-bold transition border border-slate-200/80 relative active:scale-95" title="系統設定 (OCR / 試算表 / LINE)">
           <i class="ph-bold ph-gear text-base"></i>
           <span id="syncIndicatorDot" class="w-2 h-2 rounded-full bg-slate-400 absolute top-1.5 right-1.5 ring-2 ring-white"></span>
@@ -98,7 +98,7 @@
         <i class="ph-bold ph-squares-four text-base"></i> 追蹤總覽
       </button>
       <button onclick="switchTab('deals')" id="tabBtn-deals" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
-        <i class="ph-bold ph-kanban text-base"></i> 商機案件管理
+        <i class="ph-bold ph-kanban text-base"></i> 商機案件
       </button>
       <button onclick="switchTab('notes')" id="tabBtn-notes" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
         <i class="ph-bold ph-note-pencil text-base"></i> 即時備忘錄
@@ -112,7 +112,7 @@
   <!-- MAIN APP CONTAINER -->
   <main class="max-w-5xl mx-auto px-4 pt-4 pb-8">
 
-    <!-- VIEW 1: OVERVIEW (即時備忘錄置頂，下方為依時間排序之待追蹤清單) -->
+    <!-- VIEW 1: OVERVIEW (即時備忘錄置頂，下方為依時間順序排列之放大待追蹤清單) -->
     <div id="view-overview" class="app-view space-y-5">
       
       <!-- TOP POSITION: 即時備忘錄 (QUICK SCRATCHPAD / MEMOS) -->
@@ -154,7 +154,7 @@
         </div>
       </div>
 
-      <!-- MIDDLE POSITION: ENLARGED FOLLOW-UP LIST (依設定時間順序排列) -->
+      <!-- MIDDLE POSITION: ENLARGED FOLLOW-UP LIST (依設定時間順序嚴格排列) -->
       <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
           <div class="flex items-center space-x-2.5">
@@ -183,7 +183,7 @@
 
     </div>
 
-    <!-- VIEW 2: DEALS MANAGEMENT VIEW -->
+    <!-- VIEW 2: DEALS MANAGEMENT VIEW (商機案件) -->
     <div id="view-deals" class="app-view hidden space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
         <div class="flex items-center gap-3">
@@ -206,7 +206,7 @@
         </div>
       </div>
 
-      <!-- Stage Filter Tabs -->
+      <!-- Stage Filter Tabs (4 Stages: 初次接洽, 方案報價, 贏單簽約, 暫緩結案) -->
       <div class="flex overflow-x-auto custom-scrollbar space-x-2 pb-1">
         <button onclick="filterDealStage('ALL')" class="deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap" data-stage="ALL">全部案件</button>
         <button onclick="filterDealStage('LEAD')" class="deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-stage="LEAD">初次接洽</button>
@@ -260,7 +260,7 @@
         <button onclick="filterNotes('COMPLETED')" id="noteFilter-COMPLETED" class="note-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">已完成</button>
       </div>
 
-      <!-- Notes Grid / List Container -->
+      <!-- Notes List Container -->
       <div id="dedicatedNotesContainer" class="space-y-2.5">
         <!-- Populated by JavaScript -->
       </div>
@@ -291,7 +291,7 @@
 
       <!-- Cards Grid List -->
       <div id="cardsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <!-- Dynamic cards -->
+        <!-- Dynamic cards populated by JavaScript -->
       </div>
     </div>
 
@@ -318,10 +318,6 @@
       </button>
     </div>
   </nav>
-
-  <!-- =========================================================================
-       MODALS SECTION
-       ========================================================================= -->
 
   <!-- MODAL 1: UNIVERSAL QUICK ADD (+) MODAL -->
   <div id="quickAddModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
@@ -683,9 +679,6 @@
   <!-- GLOBAL TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-  <!-- =========================================================================
-       JAVASCRIPT LOGIC CORE
-       ========================================================================= -->
   <script>
     /* --------------------------------------------------------------------------
        Application State & Storage Keys
@@ -787,7 +780,7 @@
     let autoSyncTimer = null;
 
     /* --------------------------------------------------------------------------
-       Initialization
+       Initialization & Tab Switching
        -------------------------------------------------------------------------- */
     window.addEventListener('DOMContentLoaded', () => {
       renderAllViews();
@@ -807,39 +800,6 @@
       renderCardsList();
     }
 
-    function populateSettingsInputs() {
-      // 1. OCR Key
-      const keyInput = document.getElementById('settingsGeminiApiKeyInput');
-      const keyStatus = document.getElementById('apiKeyStatusLabel');
-      if (keyInput) keyInput.value = geminiApiKey;
-      if (keyStatus) {
-        if (geminiApiKey) {
-          keyStatus.textContent = '狀態：已設定金鑰 (可正常辨識)';
-          keyStatus.className = 'text-xs font-semibold text-emerald-600';
-        } else {
-          keyStatus.textContent = '狀態：未設定 (辨識時將引導申請)';
-          keyStatus.className = 'text-xs font-semibold text-slate-400';
-        }
-      }
-
-      // 2. Google Sheets
-      const sheetsUrlInput = document.getElementById('settingsSheetsUrlInput');
-      const autoSyncCheckbox = document.getElementById('settingsAutoSyncCheckbox');
-      if (sheetsUrlInput && sheetsConfig.webAppUrl) sheetsUrlInput.value = sheetsConfig.webAppUrl;
-      if (autoSyncCheckbox) autoSyncCheckbox.checked = !!sheetsConfig.autoSync;
-
-      // 3. LINE Webhook
-      const lineUrlInput = document.getElementById('settingsLineWebhookInput');
-      if (lineUrlInput && lineConfig.webhookUrl) {
-        lineUrlInput.value = lineConfig.webhookUrl;
-      } else if (lineUrlInput && sheetsConfig.webAppUrl) {
-        lineUrlInput.value = sheetsConfig.webAppUrl;
-      }
-    }
-
-    /* --------------------------------------------------------------------------
-       Tab Switching (Overview, Deals, Notes, Cards)
-       -------------------------------------------------------------------------- */
     function switchTab(tabId) {
       document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
       const activeView = document.getElementById(`view-${tabId}`);
@@ -1077,35 +1037,38 @@
     }
 
     /* --------------------------------------------------------------------------
-       OVERVIEW: 3. PIPELINE KANBAN SUMMARY
-       -------------------------------------------------------------------------- */
-    function renderPipelineSummary() {
-      const stages = [
-        { key: 'LEAD', label: '初次接洽' },
-        { key: 'PROPOSAL', label: '方案報價' },
-        { key: 'NEGOTIATION', label: '商務談判' },
-        { key: 'WON', label: '贏單簽約' },
-        { key: 'LOST', label: '暫緩結案' }
-      ];
-
-      const grid = document.getElementById('pipelineKanbanGrid');
-      grid.innerHTML = stages.map(s => {
-        const count = deals.filter(d => d.stage === s.key).length;
-        const sum = deals.filter(d => d.stage === s.key).reduce((acc, cur) => acc + (cur.amount || 0), 0);
-
-        return `
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-center space-y-1">
-            <span class="text-[11px] font-bold text-slate-500 block">${s.label}</span>
-            <span class="text-lg font-black text-slate-900 block">${count}</span>
-            <span class="text-[10px] text-slate-400 block truncate">NT$ ${formatNumber(sum)}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    /* --------------------------------------------------------------------------
        UNIFIED SETTINGS MODAL HANDLERS (OCR, GOOGLE SHEETS, LINE)
        -------------------------------------------------------------------------- */
+    function populateSettingsInputs() {
+      // 1. OCR Key
+      const keyInput = document.getElementById('settingsGeminiApiKeyInput');
+      const keyStatus = document.getElementById('apiKeyStatusLabel');
+      if (keyInput) keyInput.value = geminiApiKey;
+      if (keyStatus) {
+        if (geminiApiKey) {
+          keyStatus.textContent = '狀態：已設定金鑰 (可正常辨識)';
+          keyStatus.className = 'text-xs font-semibold text-emerald-600';
+        } else {
+          keyStatus.textContent = '狀態：未設定 (辨識時將引導申請)';
+          keyStatus.className = 'text-xs font-semibold text-slate-400';
+        }
+      }
+
+      // 2. Google Sheets
+      const sheetsUrlInput = document.getElementById('settingsSheetsUrlInput');
+      const autoSyncCheckbox = document.getElementById('settingsAutoSyncCheckbox');
+      if (sheetsUrlInput && sheetsConfig.webAppUrl) sheetsUrlInput.value = sheetsConfig.webAppUrl;
+      if (autoSyncCheckbox) autoSyncCheckbox.checked = !!sheetsConfig.autoSync;
+
+      // 3. LINE Webhook
+      const lineUrlInput = document.getElementById('settingsLineWebhookInput');
+      if (lineUrlInput && lineConfig.webhookUrl) {
+        lineUrlInput.value = lineConfig.webhookUrl;
+      } else if (lineUrlInput && sheetsConfig.webAppUrl) {
+        lineUrlInput.value = sheetsConfig.webAppUrl;
+      }
+    }
+
     function openSettingsModal(defaultTab = 'ocr') {
       populateSettingsInputs();
       switchSettingsTab(defaultTab);
@@ -1322,7 +1285,7 @@
     }
 
     /* --------------------------------------------------------------------------
-       DEAL CRUD HANDLERS
+       DEALS CRUD & MANAGEMENT
        -------------------------------------------------------------------------- */
     function openDealModal(dealId = null) {
       const form = document.getElementById('dealForm');
@@ -1785,7 +1748,7 @@
     }
 
     /* --------------------------------------------------------------------------
-       UNIVERSAL QUICK ADD (+)
+       UNIVERSAL QUICK ADD (+) & GOOGLE SHEETS SYNC
        -------------------------------------------------------------------------- */
     function openQuickAddModal() {
       document.getElementById('quickAddModal').classList.remove('hidden');
@@ -1795,9 +1758,6 @@
       document.getElementById('quickAddModal').classList.add('hidden');
     }
 
-    /* --------------------------------------------------------------------------
-       GOOGLE SHEETS SYNC
-       -------------------------------------------------------------------------- */
     function triggerAutoSync() {
       if (!sheetsConfig.webAppUrl || !sheetsConfig.autoSync) return;
       clearTimeout(autoSyncTimer);
@@ -1869,7 +1829,7 @@
     }
 
     /* --------------------------------------------------------------------------
-       LINE DISPATCH & REAL BOT PUSH
+       LINE DISPATCH & HELPERS
        -------------------------------------------------------------------------- */
     function getLineEndpointUrl() {
       return lineConfig.webhookUrl || sheetsConfig.webAppUrl;
@@ -2023,7 +1983,7 @@
       }, 3200);
     }
 
-    // Global bindings
+    // Global bindings for inline event attributes
     window.switchTab = switchTab;
     window.openQuickAddModal = openQuickAddModal;
     window.closeQuickAddModal = closeQuickAddModal;
