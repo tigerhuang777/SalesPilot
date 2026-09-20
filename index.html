@@ -2,17 +2,17 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SalesPilot 業務追蹤與智慧名片系統</title>
-  <!-- Mobile Web App & PWA Capabilities -->
+  
+  <!-- PWA & Mobile Web App Meta -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SalesPilot">
   <meta name="theme-color" content="#059669">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons CDN -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -21,7 +21,6 @@
             brand: {
               50: '#ecfdf5',
               100: '#d1fae5',
-              200: '#a7f3d0',
               500: '#10b981',
               600: '#059669',
               700: '#047857',
@@ -31,117 +30,68 @@
           }
         }
       }
-    };
+    }
   </script>
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    .hide-scrollbar::-webkit-scrollbar {
-      display: none;
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
     }
-    .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 9999px;
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-24 md:pb-12 antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-24 md:pb-12 antialiased selection:bg-brand-500 selection:text-white">
 
-  <!-- Top Navigation Bar -->
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- App Brand Title -->
-      <div class="flex items-center space-x-2.5 cursor-pointer" onclick="switchTab('overview')">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-700 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-          <i class="ph-fill ph-briefcase text-xl"></i>
+  <!-- TOP HEADER BAR -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
+      <!-- Brand Logo & Name -->
+      <div class="flex items-center space-x-2 cursor-pointer" onclick="switchTab('overview')">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-700 to-emerald-500 flex items-center justify-center text-white shadow-sm shadow-emerald-500/30">
+          <i class="ph-bold ph-compass text-lg"></i>
         </div>
         <div>
-          <h1 class="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
-            SalesPilot
-            <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-800">Pro</span>
-          </h1>
-          <p class="text-[11px] text-slate-400 font-medium">業務案件追蹤 & 聯絡人名片管家</p>
+          <span class="text-base font-black tracking-tight text-slate-900 block leading-tight">SalesPilot</span>
+          <span class="text-[10px] font-semibold text-slate-400 block leading-none">業務追蹤 & 智慧名片</span>
         </div>
       </div>
 
-      <!-- Right Quick Actions Bar -->
-      <div class="flex items-center space-x-2">
-        <!-- Google Sheets Cloud Sync Status & Action Button -->
-        <button id="btnGSheetsSync" onclick="openGoogleSheetsModal()" class="relative flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold border border-emerald-200 transition active:scale-95" title="Google 試算表雲端同步設定">
-          <i class="ph-fill ph-table text-base text-emerald-600"></i>
-          <span class="hidden sm:inline" id="gsheetStatusText">雲端同步</span>
-          <span id="gsheetStatusDot" class="w-2 h-2 rounded-full bg-slate-300"></span>
+      <!-- Quick Action Utilities (Camera New Card, Unified Settings, Quick Add +) -->
+      <div class="flex items-center space-x-1.5 sm:space-x-2">
+        <!-- 1. Camera Icon: Add Card (OCR or Manual) -->
+        <button onclick="openAddCardChoiceModal()" class="flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-xl text-xs font-bold transition border border-purple-200 active:scale-95" title="新增名片 (相機 OCR / 手動建檔)">
+          <i class="ph-bold ph-camera text-base text-purple-600"></i>
+          <span class="hidden sm:inline">新增名片</span>
         </button>
 
-        <!-- Quick Add Deal Button -->
-        <button onclick="openDealModal()" class="relative flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition active:scale-95">
+        <!-- 2. Settings Icon: Unified Config (OCR, Google Sheet, LINE) -->
+        <button onclick="openSettingsModal()" class="flex items-center gap-1 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-2 rounded-xl text-xs font-bold transition border border-slate-200/80 relative active:scale-95" title="系統設定 (OCR / 試算表 / LINE)">
+          <i class="ph-bold ph-gear text-base"></i>
+          <span id="syncIndicatorDot" class="w-2 h-2 rounded-full bg-slate-400 absolute top-1.5 right-1.5 ring-2 ring-white"></span>
+          <span class="hidden md:inline ml-1">設定</span>
+        </button>
+
+        <!-- 3. Universal Quick Add (+) Button: Deal or Memo -->
+        <button onclick="openQuickAddModal()" class="flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-xl text-xs font-black shadow-sm transition active:scale-95">
           <i class="ph-bold ph-plus text-base"></i>
-          <span class="hidden sm:inline">新增案件</span>
+          <span>新增</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Top Stats & Metric Cards -->
-  <section class="max-w-5xl mx-auto px-4 pt-4">
-    <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
-      <!-- Card 1: Today Follow-ups & Overdue alerts -->
-      <div class="bg-white rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] sm:text-xs font-semibold text-slate-400">今日待追蹤</span>
-          <span class="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-xs">
-            <i class="ph-fill ph-bell-ringing"></i>
-          </span>
-        </div>
-        <div class="mt-2 flex items-baseline gap-1">
-          <span id="statTodayCount" class="text-xl sm:text-2xl font-black text-slate-800">0</span>
-          <span class="text-[10px] sm:text-xs text-slate-400">件</span>
-        </div>
-        <p id="statOverdueHint" class="text-[10px] text-amber-600 font-medium mt-0.5 truncate flex items-center gap-1">
-          <i class="ph-bold ph-circle text-[8px]"></i> 無逾期案件
-        </p>
-      </div>
-
-      <!-- Card 2: Active Pipeline & Integrated Deal Volume -->
-      <div class="bg-white rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] sm:text-xs font-semibold text-slate-400">進行中商機</span>
-          <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
-            <i class="ph-fill ph-chart-line-up"></i>
-          </span>
-        </div>
-        <div class="mt-2 flex items-baseline gap-1">
-          <span id="statActiveCount" class="text-xl sm:text-2xl font-black text-slate-800">0</span>
-          <span class="text-[10px] sm:text-xs text-slate-400">件</span>
-        </div>
-        <!-- Integrated Deal Amount in smaller typography -->
-        <p class="text-[10px] text-slate-500 font-medium mt-0.5 truncate flex items-center gap-1">
-          總額 <span id="statTotalAmount" class="font-bold text-slate-700">NT$ 0</span>
-        </p>
-      </div>
-
-      <!-- Card 3: Quick Scratchpad / Non-deal memo tasks -->
-      <div onclick="openScratchpadModal()" class="bg-white hover:bg-emerald-50/40 rounded-2xl p-3 sm:p-4 border border-slate-100 hover:border-emerald-200 shadow-sm flex flex-col justify-between relative overflow-hidden group cursor-pointer transition active:scale-98">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] sm:text-xs font-semibold text-slate-500 group-hover:text-emerald-700 transition">即時記事本</span>
-          <span class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs group-hover:scale-110 transition">
-            <i class="ph-fill ph-note-pencil"></i>
-          </span>
-        </div>
-        <div class="mt-2 flex items-baseline gap-1">
-          <span id="statNotePendingCount" class="text-xl sm:text-2xl font-black text-slate-800 group-hover:text-emerald-700">0</span>
-          <span class="text-[10px] sm:text-xs text-slate-400">項備忘</span>
-        </div>
-        <p class="text-[10px] text-emerald-600 font-medium mt-0.5 truncate flex items-center gap-1">
-          <i class="ph-bold ph-plus-circle text-[10px]"></i> 點擊速記與提醒
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Main Content Navigation Tabs (Desktop & Tablet) -->
+  <!-- DESKTOP / TABLET NAVIGATION TABS (4 TABS) -->
   <div class="max-w-5xl mx-auto px-4 hidden md:block mt-3">
     <div class="flex space-x-1 border-b border-slate-200">
       <button onclick="switchTab('overview')" id="tabBtn-overview" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-brand-600 text-brand-700 flex items-center gap-1.5">
@@ -150,999 +100,814 @@
       <button onclick="switchTab('deals')" id="tabBtn-deals" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
         <i class="ph-bold ph-kanban text-base"></i> 商機案件管理
       </button>
+      <button onclick="switchTab('notes')" id="tabBtn-notes" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
+        <i class="ph-bold ph-note-pencil text-base"></i> 即時備忘錄
+      </button>
       <button onclick="switchTab('cards')" id="tabBtn-cards" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
         <i class="ph-bold ph-address-book text-base"></i> 聯絡人名片冊
       </button>
-      <button onclick="switchTab('line')" id="tabBtn-line" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
-        <i class="ph-bold ph-chats-circle text-base"></i> LINE 提醒機器人
-      </button>
     </div>
   </div>
 
-  <!-- MAIN APP VIEWS CONTAINER -->
+  <!-- MAIN APP CONTAINER -->
   <main class="max-w-5xl mx-auto px-4 pt-4 pb-8">
 
-    <!-- VIEW 1: OVERVIEW & DASHBOARD -->
+    <!-- VIEW 1: OVERVIEW (即時備忘錄置頂，下方為依時間排序之待追蹤清單) -->
     <div id="view-overview" class="app-view space-y-5">
-      <!-- Section: Urgent / Today's Follow-up list -->
-      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <h2 class="text-sm font-bold text-slate-800">今日重點與待追蹤拜訪</h2>
+      
+      <!-- TOP POSITION: 即時備忘錄 (QUICK SCRATCHPAD / MEMOS) -->
+      <div class="bg-white rounded-2xl p-4 sm:p-6 border border-amber-200/90 shadow-sm space-y-3.5">
+        <div class="flex items-center justify-between border-b border-amber-100 pb-2.5 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-base">
+              <i class="ph-bold ph-note-pencil"></i>
+            </div>
+            <div>
+              <h2 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-1.5">
+                即時備忘錄
+                <span id="overviewNotesBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">0 項待辦</span>
+              </h2>
+              <p class="text-[11px] text-slate-400">非專案商機之臨時交辦、行政提醒與日常速記</p>
+            </div>
           </div>
-          <span id="overviewDateBadge" class="text-[11px] text-slate-400 font-medium"></span>
+          <div class="flex items-center gap-2">
+            <button onclick="sendAllNotesToLine()" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition flex items-center gap-1 border border-emerald-200/60">
+              <i class="ph-bold ph-paper-plane-tilt"></i> 轉傳未完成至 LINE
+            </button>
+            <button onclick="switchTab('notes')" class="text-xs text-slate-500 hover:text-slate-800 font-bold bg-slate-100 px-2.5 py-1 rounded-lg transition">
+              管理全部 <i class="ph-bold ph-arrow-right"></i>
+            </button>
+          </div>
         </div>
-        <div id="todayDealsContainer" class="space-y-2.5">
-          <!-- Dynamic populated today deals -->
-        </div>
-      </div>
 
-      <!-- Section: Pipeline Kanban summary -->
-      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <i class="ph-bold ph-funnel text-brand-600"></i> 商機階段管線概況
-          </h2>
-          <button onclick="switchTab('deals')" class="text-xs text-brand-600 hover:text-brand-700 font-semibold flex items-center gap-0.5">
-            查看全部案件 <i class="ph-bold ph-caret-right"></i>
+        <!-- Overview Quick Note Input Form -->
+        <form onsubmit="handleOverviewAddNote(event)" class="flex gap-2">
+          <input type="text" id="overviewQuickNoteInput" placeholder="快速記下一筆臨時交辦（例如：提醒公務車定期保養、下週請領發票）..." class="flex-1 bg-amber-50/40 border border-amber-200 rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none placeholder:text-slate-400 font-medium">
+          <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition active:scale-95 shadow-xs flex items-center gap-1">
+            <i class="ph-bold ph-plus"></i> 記下
           </button>
-        </div>
-        <div id="pipelineKanbanGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
-          <!-- Dynamic populated kanban columns -->
-        </div>
-      </div>
-    </div>
+        </form>
 
-    <!-- VIEW 2: DEALS PIPELINE MANAGEMENT -->
-    <div id="view-deals" class="app-view hidden space-y-4">
-      <!-- Deals Filter Bar -->
-      <div class="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div class="flex items-center space-x-1.5 overflow-x-auto hide-scrollbar pb-1 sm:pb-0 text-xs">
-          <button onclick="setDealsFilter('ALL')" id="filterBtn-ALL" class="deals-filter-btn px-3 py-1.5 rounded-lg bg-slate-900 text-white font-semibold transition">全部</button>
-          <button onclick="setDealsFilter('LEAD')" id="filterBtn-LEAD" class="deals-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium transition">初步接洽</button>
-          <button onclick="setDealsFilter('PROPOSAL')" id="filterBtn-PROPOSAL" class="deals-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium transition">方案報價</button>
-          <button onclick="setDealsFilter('NEGOTIATION')" id="filterBtn-NEGOTIATION" class="deals-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium transition">商務談判</button>
-          <button onclick="setDealsFilter('WON')" id="filterBtn-WON" class="deals-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium transition">已結案</button>
-        </div>
-        <div class="relative">
-          <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-          <input type="text" id="inputSearchDeals" oninput="filterDeals()" placeholder="搜尋案件、客戶或公司..." class="w-full sm:w-60 bg-slate-50 border border-slate-200 pl-9 pr-3 py-1.5 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <!-- Overview Memos Checklist -->
+        <div id="overviewNotesListContainer" class="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pt-1">
+          <!-- Populated by JavaScript -->
         </div>
       </div>
 
-      <!-- Deals Card List -->
-      <div id="dealsListContainer" class="space-y-3">
-        <!-- Dynamic populated deals -->
-      </div>
-    </div>
-
-    <!-- VIEW 3: CONTACT CARDS DIRECTORY -->
-    <div id="view-cards" class="app-view hidden space-y-4">
-      <div class="flex items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-        <div class="relative flex-1">
-          <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-          <input type="text" id="inputSearchCards" oninput="filterCards()" placeholder="搜尋姓名、公司、職稱或標籤..." class="w-full bg-slate-50 border border-slate-200 pl-9 pr-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-        </div>
-        <button onclick="openCardModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition">
-          <i class="ph-bold ph-plus"></i> 手動建檔
-        </button>
-      </div>
-
-      <!-- Cards Grid -->
-      <div id="cardsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <!-- Dynamic populated cards -->
-      </div>
-    </div>
-
-    <!-- VIEW 4: LINE BOT REMINDER HUB -->
-    <div id="view-line" class="app-view hidden space-y-5">
-      <!-- Webhook & Config Card -->
-      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- MIDDLE POSITION: ENLARGED FOLLOW-UP LIST (依設定時間順序排列) -->
+      <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
           <div class="flex items-center space-x-2.5">
-            <div class="w-8 h-8 rounded-xl bg-[#06C755] text-white flex items-center justify-center text-lg font-bold">
-              <i class="ph-fill ph-chat-circle-dots"></i>
-            </div>
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
             <div>
-              <h2 class="text-sm font-bold text-slate-900">LINE 官方帳號機器人推播配置</h2>
-              <p class="text-[11px] text-slate-400">支援直連 Make / n8n / 自建 Webhook 或 Messaging API</p>
+              <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+                待追蹤拜訪清單
+                <span id="overviewPendingBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">0 件待辦</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5 font-medium">已依預計追蹤時間順序排列（逾期案件優先紅色提醒）</p>
             </div>
           </div>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">免伺服器</span>
-        </div>
-
-        <div class="space-y-3 pt-1">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Webhook URL / API Endpoint</label>
-            <input type="url" id="inputLineWebhookUrl" placeholder="https://hook.make.com/your-endpoint 或 https://api.line.me/..." class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <p class="text-[10px] text-slate-400 mt-1">💡 推薦將 Webhook 綁定至 Make.com 或 Google Apps Script 定時推播</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Channel Access Token (可選)</label>
-              <input type="password" id="inputLineToken" placeholder="LINE Channel Access Token" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">User ID / 接收對象 ID (可選)</label>
-              <input type="text" id="inputLineUserId" placeholder="U1234567890abcdef..." class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 pt-2">
-            <button onclick="saveLineConfig()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95">
-              儲存連線設定
+          <div class="flex items-center gap-2">
+            <button onclick="sendDailyDealsToLine()" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition flex items-center gap-1 border border-emerald-200/80">
+              <i class="ph-bold ph-paper-plane-tilt"></i> 推播今日案件至 LINE
             </button>
-            <button onclick="sendLineTestPush()" class="bg-[#06C755] hover:bg-[#05b34c] text-white px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-              <i class="ph-bold ph-paper-plane-tilt"></i> 測試發送追蹤卡片
-            </button>
+            <span id="overviewDateBadge" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl"></span>
           </div>
+        </div>
+
+        <!-- Dynamic Populated Deals Container (Enlarged) -->
+        <div id="todayDealsContainer" class="space-y-3.5">
+          <!-- Populated by JavaScript -->
         </div>
       </div>
 
-      <!-- LINE Live Flex Message Simulator -->
-      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <i class="ph-bold ph-device-mobile text-slate-500"></i> LINE 訊息擬真預覽（Flex Message 樣式）
-          </h3>
-          <button onclick="sendTodayDealsToLine()" class="text-xs text-brand-600 hover:text-brand-700 font-bold flex items-center gap-1">
-            <i class="ph-bold ph-paper-plane-right"></i> 一鍵將今日清單送往 LINE
-          </button>
-        </div>
-
-        <!-- Chat Bubble Frame -->
-        <div class="max-w-sm mx-auto bg-[#849EB9] rounded-2xl p-3 shadow-inner">
-          <div class="flex items-start space-x-2">
-            <div class="w-8 h-8 rounded-full bg-[#06C755] text-white flex items-center justify-center text-sm font-black shrink-0 shadow-sm">
-              SP
-            </div>
-            <div class="flex-1 space-y-1">
-              <span class="text-[10px] text-white/90 font-bold block ml-1">SalesPilot 追蹤秘書</span>
-              <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-100 space-y-2.5">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span class="text-[11px] font-extrabold text-brand-700 flex items-center gap-1">
-                    <i class="ph-fill ph-bell-ringing"></i> 今日追蹤提醒
-                  </span>
-                  <span id="lineSimDate" class="text-[10px] text-slate-400 font-medium"></span>
-                </div>
-                <div id="lineSimContent" class="space-y-2 text-xs">
-                  <!-- Dynamic content of today deals preview -->
-                </div>
-                <div class="pt-2 border-t border-slate-100">
-                  <button onclick="switchTab('deals')" class="w-full bg-[#06C755] hover:bg-[#05b34c] text-white py-1.5 rounded-lg text-xs font-bold text-center block transition">
-                    開啟 SalesPilot 系統查看
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  </main>
 
-  <!-- Bottom Mobile Dock (Visible on Mobile only) -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 md:hidden py-1.5 px-3">
-    <div class="grid grid-cols-4 items-center">
-      <button onclick="switchTab('overview')" id="mobileNav-overview" class="flex flex-col items-center gap-0.5 text-brand-600 font-bold p-1">
-        <i class="ph-fill ph-squares-four text-xl"></i>
-        <span class="text-[10px]">總覽</span>
-      </button>
-      <button onclick="switchTab('deals')" id="mobileNav-deals" class="flex flex-col items-center gap-0.5 text-slate-400 font-medium p-1">
-        <i class="ph-bold ph-kanban text-xl"></i>
-        <span class="text-[10px]">案件</span>
-      </button>
-      <button onclick="switchTab('cards')" id="mobileNav-cards" class="flex flex-col items-center gap-0.5 text-slate-400 font-medium p-1">
-        <i class="ph-bold ph-address-book text-xl"></i>
-        <span class="text-[10px]">名片冊</span>
-      </button>
-      <button onclick="switchTab('line')" id="mobileNav-line" class="flex flex-col items-center gap-0.5 text-slate-400 font-medium p-1">
-        <i class="ph-bold ph-chats-circle text-xl"></i>
-        <span class="text-[10px]">LINE提醒</span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- MODAL: 商機案件新增/編輯 -->
-  <div id="modalDeal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150 my-auto">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-        <h3 id="modalDealTitle" class="text-sm font-bold text-slate-800">新增商機案件</h3>
-        <button onclick="closeDealModal()" class="w-7 h-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 flex items-center justify-center transition">
-          <i class="ph-bold ph-x text-base"></i>
-        </button>
-      </div>
-      <form id="formDeal" onsubmit="saveDeal(event)" class="p-5 space-y-3.5">
-        <input type="hidden" id="inputDealId">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">案件名稱 <span class="text-rose-500">*</span></label>
-          <input type="text" id="inputDealName" required placeholder="例如：2025 企業資安防護建置案" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">客戶公司</label>
-            <input type="text" id="inputDealCompany" placeholder="公司全銜" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+    <!-- VIEW 2: DEALS MANAGEMENT VIEW -->
+    <div id="view-deals" class="app-view hidden space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center text-xl">
+            <i class="ph-bold ph-kanban"></i>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">對口聯絡人</label>
-            <input type="text" id="inputDealContact" placeholder="聯絡人姓名" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <h1 class="text-base font-black text-slate-900">商機案件</h1>
+            <p class="text-xs text-slate-400">掌握每個專案推進階段、金額與下次回訪時間</p>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">預估金額 (NTD)</label>
-            <input type="number" id="inputDealAmount" placeholder="0" min="0" step="1000" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">電話 / 手機</label>
-            <input type="text" id="inputDealPhone" placeholder="0912-345-678" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">案件階段</label>
-            <select id="inputDealStage" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-              <option value="LEAD">初步接洽</option>
-              <option value="PROPOSAL">方案報價</option>
-              <option value="NEGOTIATION">商務談判</option>
-              <option value="WON">贏單簽約</option>
-              <option value="LOST">暫緩結案</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">下次追蹤日 <span class="text-rose-500">*</span></label>
-            <input type="date" id="inputDealFollowUp" required class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">追蹤重點與備忘</label>
-          <textarea id="inputDealNotes" rows="3" placeholder="紀錄上次對話核心需求、關鍵決定者期待或下一步待辦事項..." class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
-        </div>
-        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-          <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl font-bold text-xs shadow-sm transition active:scale-95">
-            儲存案件
-          </button>
-          <button type="button" onclick="closeDealModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs transition">
-            取消
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: 名片手動建檔與編輯 -->
-  <div id="modalCard" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150 my-auto">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-        <h3 id="modalCardTitle" class="text-sm font-bold text-slate-800">建立聯絡人名片</h3>
-        <button onclick="closeCardModal()" class="w-7 h-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 flex items-center justify-center transition">
-          <i class="ph-bold ph-x text-base"></i>
-        </button>
-      </div>
-      <form id="formCard" onsubmit="saveCard(event)" class="p-5 space-y-3.5">
-        <input type="hidden" id="inputCardId">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">姓名 <span class="text-rose-500">*</span></label>
-            <input type="text" id="inputCardName" required placeholder="例如：陳建宏" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">職稱</label>
-            <input type="text" id="inputCardTitle" placeholder="例如：採購經理" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">公司名稱</label>
-          <input type="text" id="inputCardCompany" placeholder="例如：鼎盛電子股份有限公司" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">電話 / 手機 <span class="text-rose-500">*</span></label>
-            <input type="text" id="inputCardPhone" required placeholder="0912-345-678" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">電子信箱</label>
-            <input type="email" id="inputCardEmail" placeholder="service@company.com" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">公司地址</label>
-          <input type="text" id="inputCardAddress" placeholder="台北市信義區信義路五段7號" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">標籤（以逗號或空格隔開）</label>
-          <input type="text" id="inputCardTags" placeholder="高潛力, 製造業, 展覽認識" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">備忘說明</label>
-          <textarea id="inputCardNotes" rows="2" placeholder="紀錄名片背後註記或重要人脈背景..." class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
-        </div>
-        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-          <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl font-bold text-xs shadow-sm transition active:scale-95">
-            儲存名片
-          </button>
-          <button type="button" onclick="closeCardModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs transition">
-            取消
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: 即時記事本 (Quick Scratchpad) -->
-  <div id="modalScratchpad" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150 my-auto flex flex-col max-h-[90vh]">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-emerald-50/60">
         <div class="flex items-center gap-2">
-          <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm">
-            <i class="ph-fill ph-note-pencil"></i>
-          </span>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900">即時記事本 & 臨時交辦</h3>
-            <p class="text-[10px] text-slate-500">專為非專案商機之突發雜務、備忘紀錄設計</p>
+          <div class="relative flex-1 sm:w-60">
+            <i class="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+            <input type="text" id="dealSearchInput" oninput="renderDealsList()" placeholder="搜尋案件名稱或客戶..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
           </div>
+          <button onclick="openDealModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs shrink-0">
+            <i class="ph-bold ph-plus"></i> 新增案件
+          </button>
         </div>
-        <button onclick="closeScratchpadModal()" class="w-7 h-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 flex items-center justify-center transition">
-          <i class="ph-bold ph-x text-base"></i>
-        </button>
       </div>
 
-      <!-- Quick Add Form -->
-      <div class="p-4 border-b border-slate-100 bg-white">
-        <form id="formScratchpad" onsubmit="addScratchpadNote(event)" class="flex gap-2">
-          <input type="text" id="inputScratchpadNote" placeholder="快速記錄臨時交辦事項（例如：下午繳交月報、請領公務加油卡）..." class="flex-1 bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
-          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95 flex items-center gap-1 shrink-0">
-            <i class="ph-bold ph-plus"></i> 速記
+      <!-- Stage Filter Tabs -->
+      <div class="flex overflow-x-auto custom-scrollbar space-x-2 pb-1">
+        <button onclick="filterDealStage('ALL')" class="deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap" data-stage="ALL">全部案件</button>
+        <button onclick="filterDealStage('LEAD')" class="deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-stage="LEAD">初次接洽</button>
+        <button onclick="filterDealStage('PROPOSAL')" class="deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-stage="PROPOSAL">方案報價</button>
+        <button onclick="filterDealStage('WON')" class="deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-stage="WON">贏單簽約</button>
+        <button onclick="filterDealStage('LOST')" class="deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-stage="LOST">暫緩結案</button>
+      </div>
+
+      <!-- Full Deals List Container -->
+      <div id="fullDealsListContainer" class="space-y-3">
+        <!-- Dynamic populated deals list -->
+      </div>
+    </div>
+
+    <!-- VIEW 3: DEDICATED NOTES SHEET VIEW -->
+    <div id="view-notes" class="app-view hidden space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-amber-200/80 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-xl">
+            <i class="ph-bold ph-note-pencil"></i>
+          </div>
+          <div>
+            <h1 class="text-base font-black text-slate-900">即時備忘錄總覽</h1>
+            <p class="text-xs text-slate-400">管理非商機之突發交辦、個人行政待辦事項</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="sendAllNotesToLine()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs shrink-0">
+            <i class="ph-bold ph-paper-plane-tilt"></i> 未完成推播至 LINE
+          </button>
+          <button onclick="clearCompletedNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+            清除已完成
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Note Input Panel -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+        <form onsubmit="handleDedicatedAddNote(event)" class="flex gap-2">
+          <input type="text" id="dedicatedNoteInput" placeholder="新增即時備忘事項..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-xl text-xs font-bold shrink-0 transition">
+            新增備忘
           </button>
         </form>
       </div>
 
-      <!-- Notes List -->
-      <div id="scratchpadListContainer" class="p-4 overflow-y-auto space-y-2.5 flex-1 min-h-[160px] max-h-[380px]">
-        <!-- Dynamic populated notes -->
+      <!-- Dedicated Notes Filter Tabs -->
+      <div class="flex space-x-2">
+        <button onclick="filterNotes('ALL')" id="noteFilter-ALL" class="note-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white">全部備忘</button>
+        <button onclick="filterNotes('PENDING')" id="noteFilter-PENDING" class="note-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">待處理</button>
+        <button onclick="filterNotes('COMPLETED')" id="noteFilter-COMPLETED" class="note-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">已完成</button>
       </div>
 
-      <!-- Footer Actions -->
-      <div class="px-4 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs">
-        <button onclick="sendAllPendingNotesToLine()" class="text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 transition">
-          <i class="ph-fill ph-chat-circle-dots"></i> 一鍵將未完成記事送往 LINE
-        </button>
-        <button onclick="closeScratchpadModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3.5 py-1.5 rounded-lg font-bold transition">
-          關閉
-        </button>
+      <!-- Notes Grid / List Container -->
+      <div id="dedicatedNotesContainer" class="space-y-2.5">
+        <!-- Populated by JavaScript -->
       </div>
     </div>
-  </div>
 
-  <!-- MODAL: Google 試算表雲端同步設定 -->
-  <div id="modalGoogleSheets" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150 my-auto">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-emerald-50/60">
+    <!-- VIEW 4: BUSINESS CARDS MANAGEMENT VIEW -->
+    <div id="view-cards" class="app-view hidden space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-xl">
+            <i class="ph-bold ph-address-book"></i>
+          </div>
+          <div>
+            <h1 class="text-base font-black text-slate-900">聯絡人名片冊</h1>
+            <p class="text-xs text-slate-400">累積商業人脈，隨時一鍵撥打電話或轉為商機案件</p>
+          </div>
+        </div>
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg">
-            <i class="ph-fill ph-table"></i>
+          <div class="relative flex-1 sm:w-60">
+            <i class="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+            <input type="text" id="cardSearchInput" oninput="renderCardsList()" placeholder="搜尋姓名、公司、職稱..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
           </div>
-          <div>
-            <h3 class="text-sm font-bold text-slate-900">Google 試算表雲端同步</h3>
-            <p class="text-[10px] text-slate-500">免租伺服器，自動建立個人雲端資料庫</p>
-          </div>
+          <button onclick="openAddCardChoiceModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs shrink-0">
+            <i class="ph-bold ph-camera"></i> 新增名片
+          </button>
         </div>
-        <button onclick="closeGoogleSheetsModal()" class="w-7 h-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 flex items-center justify-center transition">
-          <i class="ph-bold ph-x text-base"></i>
+      </div>
+
+      <!-- Cards Grid List -->
+      <div id="cardsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- Dynamic cards -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MOBILE BOTTOM NAVIGATION DOCK (4 TABS) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 py-1 px-3">
+    <div class="grid grid-cols-4 gap-1 text-center">
+      <button onclick="switchTab('overview')" id="mobileNav-overview" class="flex flex-col items-center gap-0.5 py-1 text-brand-600 font-bold">
+        <i class="ph-bold ph-squares-four text-lg"></i>
+        <span class="text-[10px] scale-90">總覽</span>
+      </button>
+      <button onclick="switchTab('deals')" id="mobileNav-deals" class="flex flex-col items-center gap-0.5 py-1 text-slate-400 hover:text-slate-600 font-medium">
+        <i class="ph-bold ph-kanban text-lg"></i>
+        <span class="text-[10px] scale-90">商機</span>
+      </button>
+      <button onclick="switchTab('notes')" id="mobileNav-notes" class="flex flex-col items-center gap-0.5 py-1 text-slate-400 hover:text-slate-600 font-medium">
+        <i class="ph-bold ph-note-pencil text-lg"></i>
+        <span class="text-[10px] scale-90">備忘錄</span>
+      </button>
+      <button onclick="switchTab('cards')" id="mobileNav-cards" class="flex flex-col items-center gap-0.5 py-1 text-slate-400 hover:text-slate-600 font-medium">
+        <i class="ph-bold ph-address-book text-lg"></i>
+        <span class="text-[10px] scale-90">名片冊</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- =========================================================================
+       MODALS SECTION
+       ========================================================================= -->
+
+  <!-- MODAL 1: UNIVERSAL QUICK ADD (+) MODAL -->
+  <div id="quickAddModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform transition-all p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+          <i class="ph-bold ph-plus-circle text-brand-600 text-lg"></i> 快速新增
+        </h3>
+        <button onclick="closeQuickAddModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
         </button>
       </div>
 
-      <div class="p-5 space-y-4 text-xs">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Google Apps Script (Web App URL)</label>
-          <input type="url" id="inputGSheetUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <p class="text-[10px] text-slate-400 mt-1">💡 依照部署手冊將 Apps Script 發佈為 Web 應用程式後貼入網址</p>
-        </div>
-
-        <!-- Auto Sync Toggle -->
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-          <div>
-            <span class="font-bold text-slate-800 block">異動時自動背景同步</span>
-            <span class="text-[10px] text-slate-400">名片或案件更新時自動同步至 Google 試算表</span>
+      <div class="space-y-2.5">
+        <button onclick="closeQuickAddModal(); openDealModal();" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50/50 transition flex items-center gap-3.5 group">
+          <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center text-xl group-hover:scale-105 transition shrink-0">
+            <i class="ph-bold ph-briefcase"></i>
           </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="checkGSheetAutoSync" class="sr-only peer" checked>
-            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-          </label>
-        </div>
+          <div>
+            <span class="text-sm font-black text-slate-900 block">1. 新增商機案件</span>
+            <span class="text-xs text-slate-400 block">建立專案商機、金額、客戶窗口與追蹤日</span>
+          </div>
+        </button>
 
-        <!-- Sync Controls -->
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <button type="button" onclick="manualPushGSheets()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-            <i class="ph-bold ph-cloud-arrow-up text-sm"></i> 上傳至試算表
-          </button>
-          <button type="button" onclick="manualPullGSheets()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
-            <i class="ph-bold ph-cloud-arrow-down text-sm"></i> 自試算表載入
-          </button>
-        </div>
-
-        <div class="text-[11px] text-slate-400 border-t border-slate-100 pt-2 flex items-center justify-between">
-          <span>上次同步時間：</span>
-          <span id="gsheetLastSyncTime" class="font-medium text-slate-600">尚未同步</span>
-        </div>
-
-        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-          <button type="button" onclick="saveGSheetsConfig()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-bold text-xs transition active:scale-95">
-            儲存設定
-          </button>
-          <button type="button" onclick="closeGoogleSheetsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-xs transition">
-            關閉
-          </button>
-        </div>
+        <button onclick="closeQuickAddModal(); switchTab('notes');" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-amber-500 hover:bg-amber-50/50 transition flex items-center gap-3.5 group">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl group-hover:scale-105 transition shrink-0">
+            <i class="ph-bold ph-note-pencil"></i>
+          </div>
+          <div>
+            <span class="text-sm font-black text-slate-900 block">2. 新增即時備忘錄</span>
+            <span class="text-xs text-slate-400 block">記錄臨時交辦、行政提醒等非商機雜務</span>
+          </div>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification Alert -->
-  <div id="toastAlert" class="fixed bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs font-medium transition-all duration-300 opacity-0 pointer-events-none translate-y-3">
-    <i id="toastIcon" class="ph-fill ph-check-circle text-brand-400 text-base"></i>
-    <span id="toastMsg">通知提示</span>
+  <!-- MODAL 2: ADD CARD CHOICE MODAL (Camera AI OCR vs Manual Input) -->
+  <div id="addCardChoiceModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-100 overflow-hidden p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+          <i class="ph-bold ph-address-book text-purple-600 text-lg"></i> 新增名片方式
+        </h3>
+        <button onclick="closeAddCardChoiceModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2.5">
+        <button onclick="triggerCameraOCR()" class="w-full text-left p-3.5 rounded-xl border border-purple-200 bg-purple-50/50 hover:bg-purple-100/60 transition flex items-center gap-3.5 group">
+          <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xl group-hover:scale-105 transition shrink-0">
+            <i class="ph-bold ph-camera"></i>
+          </div>
+          <div>
+            <span class="text-sm font-black text-purple-950 block">拍照 AI 掃描模式 (OCR)</span>
+            <span class="text-xs text-purple-700/80 block">使用手機拍照，由 Gemini AI 自動辨識姓名與電話</span>
+          </div>
+        </button>
+
+        <input type="file" id="cardCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleCardImageCaptured(event)">
+
+        <button onclick="closeAddCardChoiceModal(); openCardModal();" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-slate-400 hover:bg-slate-50 transition flex items-center gap-3.5 group">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-xl group-hover:scale-105 transition shrink-0">
+            <i class="ph-bold ph-pencil-simple-line"></i>
+          </div>
+          <div>
+            <span class="text-sm font-black text-slate-900 block">手動輸入名片</span>
+            <span class="text-xs text-slate-400 block">開啟空白表單，直接手動輸入聯絡人資料</span>
+          </div>
+        </button>
+      </div>
+    </div>
   </div>
 
+  <!-- MODAL 3: UNIFIED SETTINGS MODAL (OCR, GOOGLE SHEETS, LINE) -->
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden my-6">
+      
+      <!-- Settings Header -->
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center text-lg">
+            <i class="ph-bold ph-gear"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900">系統整合設定</h3>
+            <p class="text-[11px] text-slate-400">配置 AI OCR、Google 試算表與 LINE 提醒</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Settings Tabs Header -->
+      <div class="flex border-b border-slate-200 bg-slate-50 px-3 pt-2 gap-1 overflow-x-auto custom-scrollbar">
+        <button onclick="switchSettingsTab('ocr')" id="settingsTabBtn-ocr" class="settings-tab-btn px-3 py-2 text-xs font-bold rounded-t-xl border-b-2 border-purple-600 text-purple-700 bg-white flex items-center gap-1.5 whitespace-nowrap">
+          <i class="ph-bold ph-sparkle text-purple-600"></i> 1. AI OCR 設定
+        </button>
+        <button onclick="switchSettingsTab('sheets')" id="settingsTabBtn-sheets" class="settings-tab-btn px-3 py-2 text-xs font-bold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap">
+          <i class="ph-bold ph-file-csv text-emerald-600"></i> 2. Google 試算表
+        </button>
+        <button onclick="switchSettingsTab('line')" id="settingsTabBtn-line" class="settings-tab-btn px-3 py-2 text-xs font-bold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap">
+          <i class="ph-bold ph-chats-circle text-emerald-600"></i> 3. LINE 提醒
+        </button>
+      </div>
+
+      <!-- Settings Body Container -->
+      <div class="p-5">
+
+        <!-- TAB 1: GEMINI AI OCR SETTING -->
+        <div id="settingsContent-ocr" class="settings-tab-content space-y-4">
+          <div class="bg-purple-50 p-3 rounded-xl border border-purple-100 text-xs space-y-1.5 text-purple-900">
+            <span class="font-bold block flex items-center gap-1">
+              <i class="ph-bold ph-info"></i> 免費申請個人 Google Gemini API Key
+            </span>
+            <p class="text-purple-700 leading-relaxed">
+              系統使用 Gemini 視覺多模態模型辨識名片。前往 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-bold text-purple-900 hover:text-purple-950">Google AI Studio (點此開啟)</a>，點擊「Create API Key」，將金鑰貼至下方即可。金鑰僅儲存於您的手機本機。
+            </p>
+          </div>
+
+          <form onsubmit="saveApiKeyFromSettings(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Gemini API Key</label>
+              <input type="password" id="settingsGeminiApiKeyInput" placeholder="AIzaSy..." class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+              <span id="apiKeyStatusLabel" class="text-xs font-semibold text-slate-500">
+                狀態：未設定
+              </span>
+              <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                儲存 OCR 金鑰
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 2: GOOGLE SHEETS SETTING -->
+        <div id="settingsContent-sheets" class="settings-tab-content hidden space-y-4">
+          <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-xs space-y-1 text-emerald-900">
+            <span class="font-bold block flex items-center gap-1">
+              <i class="ph-bold ph-cloud-check"></i> 免費試算表雙向同步
+            </span>
+            <p class="text-emerald-700 leading-relaxed">
+              將名片、案件與備忘錄無縫保存在 Google 試算表中。需將 Apps Script 部署為 Web App 並允許「所有人」存取。
+            </p>
+          </div>
+
+          <form onsubmit="saveSheetsConfigFromSettings(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Apps Script Web App 網址 (/exec 結尾)</label>
+              <input type="url" id="settingsSheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            </div>
+
+            <div class="flex items-center gap-2 py-1">
+              <input type="checkbox" id="settingsAutoSyncCheckbox" class="rounded text-brand-600 focus:ring-brand-500">
+              <label for="settingsAutoSyncCheckbox" class="text-xs font-semibold text-slate-700">資料變更時自動在背景同步 (1.5 秒)</label>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between pt-2 border-t border-slate-100 gap-2">
+              <button type="button" onclick="pullFromGoogleSheets()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
+                <i class="ph-bold ph-arrow-down"></i> 自試算表載入
+              </button>
+              <div class="flex gap-2">
+                <button type="button" onclick="syncToGoogleSheets()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1">
+                  <i class="ph-bold ph-arrow-up"></i> 上傳至試算表
+                </button>
+                <button type="submit" class="text-xs bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl font-bold transition">
+                  儲存設定
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 3: LINE BOT REMINDER SETTING -->
+        <div id="settingsContent-line" class="settings-tab-content hidden space-y-4">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1 text-slate-700">
+            <span class="font-bold block flex items-center gap-1">
+              <i class="ph-bold ph-chats-circle text-emerald-600"></i> LINE 提醒派發設定
+            </span>
+            <p class="text-slate-500 leading-relaxed">
+              貼上您的 Google Apps Script 網址（結尾為 /exec），即可一鍵將今日待追蹤與即時備忘發送到您的個人 LINE 帳號！
+            </p>
+          </div>
+
+          <form onsubmit="saveLineSettingsFromSettings(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">LINE Webhook URL (Apps Script /exec 網址)</label>
+              <input type="url" id="settingsLineWebhookInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
+              <button type="button" onclick="sendDailyDealsToLine()" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1 border border-emerald-200">
+                <i class="ph-bold ph-paper-plane-tilt"></i> 測試發送今日重點
+              </button>
+              <button type="submit" class="text-xs bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl font-bold transition">
+                儲存 LINE 設定
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: DEAL FORM MODAL (CREATE / EDIT) -->
+  <div id="dealModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden my-6">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="dealModalTitle" class="text-base font-black text-slate-900">新增商機案件</h3>
+        <button onclick="closeDealModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+      <form id="dealForm" onsubmit="saveDeal(event)" class="p-5 space-y-3.5">
+        <input type="hidden" id="dealFormId">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">案件名稱 *</label>
+          <input type="text" id="dealFormTitle" required placeholder="例如：企業年度資安防護方案" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">客戶公司 *</label>
+            <input type="text" id="dealFormCompany" required placeholder="公司全銜" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">聯絡窗口</label>
+            <input type="text" id="dealFormContact" placeholder="姓名 / 職稱" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">聯絡電話</label>
+            <input type="tel" id="dealFormPhone" placeholder="手機或分機" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">預估金額 (NTD)</label>
+            <input type="number" id="dealFormAmount" min="0" step="1000" placeholder="0" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">目前進度階段</label>
+            <select id="dealFormStage" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              <option value="LEAD">初次接洽 (LEAD)</option>
+              <option value="PROPOSAL">方案報價 (PROPOSAL)</option>
+              <option value="WON">贏單簽約 (WON)</option>
+              <option value="LOST">暫緩結案 (LOST)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">下次追蹤日期 *</label>
+            <input type="date" id="dealFormNextFollowUp" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">追蹤備忘與談話重點</label>
+          <textarea id="dealFormNotes" rows="3" placeholder="客戶目前顧慮、預算考量或待辦確認事項..." class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <button type="button" id="btnDeleteDeal" onclick="deleteCurrentDeal()" class="text-xs text-rose-600 hover:text-rose-700 font-bold hidden">
+            刪除案件
+          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeDealModal()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200">
+              取消
+            </button>
+            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-brand-600 rounded-xl hover:bg-brand-700 shadow-sm">
+              儲存案件
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: CARD FORM MODAL (MANUAL INPUT / OCR RESULT VERIFY) -->
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden my-6">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="cardModalTitle" class="text-base font-black text-slate-900">新增名片資料</h3>
+        <button onclick="closeCardModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+      <form id="cardForm" onsubmit="saveCard(event)" class="p-5 space-y-3.5">
+        <input type="hidden" id="cardFormId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">姓名 *</label>
+            <input type="text" id="cardFormName" required placeholder="陳大文" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">職稱</label>
+            <input type="text" id="cardFormTitle" placeholder="技術長 / 業務總監" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">所屬公司 *</label>
+            <input type="text" id="cardFormCompany" required placeholder="企業全銜" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">電話 / 手機 *</label>
+            <input type="tel" id="cardFormPhone" required placeholder="0912-345-678" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Email</label>
+            <input type="email" id="cardFormEmail" placeholder="service@company.com" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">分類標籤 (以逗號分隔)</label>
+            <input type="text" id="cardFormTags" placeholder="高潛力, 製造業, 展覽認識" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">公司地址</label>
+          <input type="text" id="cardFormAddress" placeholder="台北市信義區..." class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">備忘說明 (客戶性格、需求背景)</label>
+          <textarea id="cardFormNotes" rows="2" placeholder="備註個人喜好或相識場合..." class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <button type="button" id="btnDeleteCard" onclick="deleteCurrentCard()" class="text-xs text-rose-600 hover:text-rose-700 font-bold hidden">
+            刪除名片
+          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeCardModal()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200">
+              取消
+            </button>
+            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-purple-600 rounded-xl hover:bg-purple-700 shadow-sm">
+              儲存名片
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- GLOBAL TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- =========================================================================
+       JAVASCRIPT LOGIC CORE
+       ========================================================================= -->
   <script>
-    /* ==========================================================================
-       Global Application State & Storage Constants
-       ========================================================================== */
-    const STORAGE_KEY_DEALS = 'salespilot_deals_data';
-    const STORAGE_KEY_CARDS = 'salespilot_cards_data';
-    const STORAGE_KEY_LINE = 'salespilot_line_config';
-    const STORAGE_KEY_NOTES = 'salespilot_quicknotes_data';
-    const STORAGE_KEY_GSHEET_URL = 'salespilot_gsheet_url';
-    const STORAGE_KEY_GSHEET_AUTOSYNC = 'salespilot_gsheet_autosync';
-    const STORAGE_KEY_GSHEET_LAST_SYNC = 'salespilot_gsheet_last_sync';
+    /* --------------------------------------------------------------------------
+       Application State & Storage Keys
+       -------------------------------------------------------------------------- */
+    const STORAGE_KEYS = {
+      DEALS: 'salespilot_deals_v2',
+      CARDS: 'salespilot_cards_v2',
+      NOTES: 'salespilot_notes_v2',
+      GEMINI_KEY: 'salespilot_gemini_key_v2',
+      SHEETS: 'salespilot_sheets_config_v2',
+      LINE: 'salespilot_line_config_v2'
+    };
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-    // In-memory data collections
-    let deals = [];
-    let cards = [];
-    let quickNotes = [];
-    let lineConfig = { webhookUrl: '', token: '', userId: '' };
-    let gsheetUrl = '';
-    let gsheetAutoSync = true;
-    let isGSheetSyncing = false;
-    let autoSyncDebounceTimer = null;
-
-    let currentDealsFilter = 'ALL';
-    let currentTab = 'overview';
-
-    /* ==========================================================================
-       Sample Initial Datasets
-       ========================================================================== */
-    const defaultDeals = [
+    const DEFAULT_DEALS = [
       {
         id: 'deal-1',
-        title: '2025 全球供應鏈 ERP 升級建置案',
-        company: '宏達精密工業股份有限公司',
-        contact: '林志豪 協理',
+        title: '企業年度雲端資安防護授權升級',
+        company: '宏達生技股份有限公司',
+        contact: '王副總經理',
         phone: '0912-345-678',
-        amount: 1850000,
-        stage: 'NEGOTIATION',
+        amount: 850000,
+        stage: 'PROPOSAL',
         nextFollowUp: todayStr,
-        notes: '客戶董事會已同意編列預算，今日需確認合約維護條款及頭期款 30% 條件。',
+        notes: '客戶預計今日與總經理確認合約條款，需於下午 2 點前致電確認進度。',
         createdAt: todayStr
       },
       {
         id: 'deal-2',
-        title: '雲端資安端點防護訂閱 (200 User)',
-        company: '凱絡生技醫療科技',
-        contact: '張雅婷 資訊副理',
-        phone: '0922-888-777',
-        amount: 360000,
+        title: '智慧工廠物聯網感測器導入評估',
+        company: '大聯精密工業',
+        contact: '李廠長',
+        phone: '0988-123-456',
+        amount: 1200000,
         stage: 'PROPOSAL',
-        nextFollowUp: todayStr,
-        notes: '已寄送正式方案報價單，預計今日下午 15:00 電話溝通評估回饋。',
-        createdAt: todayStr
+        nextFollowUp: '2025-01-10',
+        notes: '上週五已完成現場場勘，客戶要求微調報價分期付款方案。',
+        createdAt: '2025-01-02'
       },
       {
         id: 'deal-3',
-        title: 'AI 智慧名片與客戶資料管家專案',
-        company: '大拓國際物流',
-        contact: '陳建文 經理',
-        phone: '0933-111-222',
-        amount: 520000,
+        title: '連鎖門市 POS 系統升級汰換案',
+        company: '馥御餐飲集團',
+        contact: '林協理',
+        phone: '0922-555-777',
+        amount: 450000,
         stage: 'LEAD',
-        nextFollowUp: getFutureDate(3),
-        notes: '上週台北自動化展認識，已安排下週二現場 Demo 系統簡報。',
+        nextFollowUp: '2026-12-31',
+        notes: '新門市開幕時程預計在下季，先提供型錄與公版報價單供內部傳閱。',
         createdAt: todayStr
       }
     ];
 
-    const defaultCards = [
+    const DEFAULT_CARDS = [
       {
         id: 'card-1',
-        name: '林志豪',
-        title: '營運協理',
-        company: '宏達精密工業股份有限公司',
+        name: '王崇光',
+        title: '副總經理',
+        company: '宏達生技股份有限公司',
         phone: '0912-345-678',
-        email: 'ch.lin@ht-precision.com.tw',
-        address: '台中市南屯區精密機械園區精密三路12號',
-        tags: '決策主管, 精密製造, ERP',
-        notes: '喜歡打高爾夫球，重視售後保固與 SLA 回應速度。',
+        email: 'ckwang@hondabio.com.tw',
+        address: '台北市內湖區瑞光路 500 號 8 樓',
+        tags: '生技醫療, 決策高層, 潛在客戶',
+        notes: '注重資訊安全與合規性，喜歡直接用電話溝通。',
         createdAt: todayStr
       },
       {
         id: 'card-2',
-        name: '張雅婷',
-        title: '資訊管理部 副理',
-        company: '凱絡生技醫療科技',
-        phone: '0922-888-777',
-        email: 'yating.chang@caratbio.com',
-        address: '新竹縣竹北市生醫路二段88號',
-        tags: '生技醫療, 資訊安全, 雲端',
-        notes: '資安架構評估窗口，重視 ISO 27001 合規與個人資料隱私保護。',
+        name: '李振興',
+        title: '製造總廠長',
+        company: '大聯精密工業',
+        phone: '0988-123-456',
+        email: 'js_lee@dalian-ind.tw',
+        address: '台中市大雅區中科路 10 號',
+        tags: '精密製造, 工業自動化',
+        notes: '務實工程背景，溝通需備妥 ROI 與詳細數據對照表。',
         createdAt: todayStr
       }
     ];
 
-    const defaultNotes = [
-      {
-        id: 'note-1',
-        text: '提醒公務車定期進廠 10,000 公里保養與輪胎調胎',
-        completed: false,
-        createdAt: todayStr
-      },
-      {
-        id: 'note-2',
-        text: '向總務處請領業務專用名片 5 盒與合約專用紙',
-        completed: true,
-        createdAt: todayStr
-      }
+    const DEFAULT_NOTES = [
+      { id: 'note-1', text: '公務車定期保養（預約週四上午）', completed: false, createdAt: todayStr },
+      { id: 'note-2', text: '向人資部繳交本季外部研習結業證書', completed: true, createdAt: todayStr },
+      { id: 'note-3', text: '確認下週拜訪隨行簡報筆電與轉接線', completed: false, createdAt: todayStr }
     ];
 
-    /* ==========================================================================
-       State Initialization & Persistence
-       ========================================================================== */
-    function initializeState() {
-      // Load Deals
-      try {
-        const savedDeals = localStorage.getItem(STORAGE_KEY_DEALS);
-        deals = savedDeals ? JSON.parse(savedDeals) : defaultDeals;
-      } catch (e) {
-        deals = defaultDeals;
-      }
+    // Reactive State
+    let deals = JSON.parse(localStorage.getItem(STORAGE_KEYS.DEALS)) || DEFAULT_DEALS;
+    let cards = JSON.parse(localStorage.getItem(STORAGE_KEYS.CARDS)) || DEFAULT_CARDS;
+    let quickNotes = JSON.parse(localStorage.getItem(STORAGE_KEYS.NOTES)) || DEFAULT_NOTES;
+    let geminiApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_KEY) || '';
+    let sheetsConfig = JSON.parse(localStorage.getItem(STORAGE_KEYS.SHEETS)) || { webAppUrl: '', autoSync: false };
+    let lineConfig = JSON.parse(localStorage.getItem(STORAGE_KEYS.LINE)) || { webhookUrl: '' };
 
-      // Load Cards
-      try {
-        const savedCards = localStorage.getItem(STORAGE_KEY_CARDS);
-        cards = savedCards ? JSON.parse(savedCards) : defaultCards;
-      } catch (e) {
-        cards = defaultCards;
-      }
+    let currentStageFilter = 'ALL';
+    let currentNotesFilter = 'ALL';
+    let autoSyncTimer = null;
 
-      // Load Quick Notes
-      try {
-        const savedNotes = localStorage.getItem(STORAGE_KEY_NOTES);
-        quickNotes = savedNotes ? JSON.parse(savedNotes) : defaultNotes;
-      } catch (e) {
-        quickNotes = defaultNotes;
-      }
-
-      // Load LINE Configuration
-      try {
-        const savedLine = localStorage.getItem(STORAGE_KEY_LINE);
-        if (savedLine) lineConfig = JSON.parse(savedLine);
-      } catch (e) {
-        lineConfig = { webhookUrl: '', token: '', userId: '' };
-      }
-
-      // Load Google Sheets Settings
-      try {
-        gsheetUrl = localStorage.getItem(STORAGE_KEY_GSHEET_URL) || '';
-        const savedAutoSync = localStorage.getItem(STORAGE_KEY_GSHEET_AUTOSYNC);
-        gsheetAutoSync = savedAutoSync !== null ? JSON.parse(savedAutoSync) : true;
-      } catch (e) {
-        gsheetUrl = '';
-        gsheetAutoSync = true;
-      }
-
-      // Populate LINE Settings UI
-      if (document.getElementById('inputLineWebhookUrl')) {
-        document.getElementById('inputLineWebhookUrl').value = lineConfig.webhookUrl || '';
-      }
-      if (document.getElementById('inputLineToken')) {
-        document.getElementById('inputLineToken').value = lineConfig.token || '';
-      }
-      if (document.getElementById('inputLineUserId')) {
-        document.getElementById('inputLineUserId').value = lineConfig.userId || '';
-      }
-
-      // Populate Google Sheets UI
-      updateGoogleSheetsUIState();
-
+    /* --------------------------------------------------------------------------
+       Initialization
+       -------------------------------------------------------------------------- */
+    window.addEventListener('DOMContentLoaded', () => {
       renderAllViews();
+      updateSyncStatusUI();
 
-      // If Google Sheet URL is configured, pull initial remote state
-      if (gsheetUrl) {
-        syncWithGoogleSheets('pull', true);
-      }
-    }
+      const dealDateInput = document.getElementById('dealFormNextFollowUp');
+      if (dealDateInput) dealDateInput.value = todayStr;
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY_DEALS, JSON.stringify(deals));
-      localStorage.setItem(STORAGE_KEY_CARDS, JSON.stringify(cards));
-      localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(quickNotes));
-      localStorage.setItem(STORAGE_KEY_LINE, JSON.stringify(lineConfig));
-      renderStats();
-
-      // Trigger debounced Google Sheets auto sync if enabled
-      if (gsheetUrl && gsheetAutoSync) {
-        if (autoSyncDebounceTimer) clearTimeout(autoSyncDebounceTimer);
-        autoSyncDebounceTimer = setTimeout(() => {
-          syncWithGoogleSheets('push', true);
-        }, 1500);
-      }
-    }
+      populateSettingsInputs();
+    });
 
     function renderAllViews() {
-      renderStats();
-      renderTodayDeals();
-      renderPipelineKanban();
-      renderDeals();
-      renderCards();
-      renderScratchpad();
-      updateLinePreview();
+      renderOverviewNotes(); // Top
+      renderFollowUpOverview(); // Middle
+      renderDealsList();
+      renderDedicatedNotes();
+      renderCardsList();
     }
 
-    /* ==========================================================================
-       Tab Navigation System
-       ========================================================================== */
-    function switchTab(tabId) {
-      currentTab = tabId;
-      const views = ['overview', 'deals', 'cards', 'line'];
-      views.forEach(v => {
-        const el = document.getElementById(`view-${v}`);
-        if (el) {
-          if (v === tabId) {
-            el.classList.remove('hidden');
-          } else {
-            el.classList.add('hidden');
-          }
+    function populateSettingsInputs() {
+      // 1. OCR Key
+      const keyInput = document.getElementById('settingsGeminiApiKeyInput');
+      const keyStatus = document.getElementById('apiKeyStatusLabel');
+      if (keyInput) keyInput.value = geminiApiKey;
+      if (keyStatus) {
+        if (geminiApiKey) {
+          keyStatus.textContent = '狀態：已設定金鑰 (可正常辨識)';
+          keyStatus.className = 'text-xs font-semibold text-emerald-600';
+        } else {
+          keyStatus.textContent = '狀態：未設定 (辨識時將引導申請)';
+          keyStatus.className = 'text-xs font-semibold text-slate-400';
         }
-      });
+      }
 
-      // Desktop Tab Styles
+      // 2. Google Sheets
+      const sheetsUrlInput = document.getElementById('settingsSheetsUrlInput');
+      const autoSyncCheckbox = document.getElementById('settingsAutoSyncCheckbox');
+      if (sheetsUrlInput && sheetsConfig.webAppUrl) sheetsUrlInput.value = sheetsConfig.webAppUrl;
+      if (autoSyncCheckbox) autoSyncCheckbox.checked = !!sheetsConfig.autoSync;
+
+      // 3. LINE Webhook
+      const lineUrlInput = document.getElementById('settingsLineWebhookInput');
+      if (lineUrlInput && lineConfig.webhookUrl) {
+        lineUrlInput.value = lineConfig.webhookUrl;
+      } else if (lineUrlInput && sheetsConfig.webAppUrl) {
+        lineUrlInput.value = sheetsConfig.webAppUrl;
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       Tab Switching (Overview, Deals, Notes, Cards)
+       -------------------------------------------------------------------------- */
+    function switchTab(tabId) {
+      document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
+      const activeView = document.getElementById(`view-${tabId}`);
+      if (activeView) activeView.classList.remove('hidden');
+
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('border-brand-600', 'text-brand-700');
         btn.classList.add('border-transparent', 'text-slate-500');
       });
-      const activeDesktopTab = document.getElementById(`tabBtn-${tabId}`);
-      if (activeDesktopTab) {
-        activeDesktopTab.classList.remove('border-transparent', 'text-slate-500');
-        activeDesktopTab.classList.add('border-brand-600', 'text-brand-700');
+      const activeTabBtn = document.getElementById(`tabBtn-${tabId}`);
+      if (activeTabBtn) {
+        activeTabBtn.classList.remove('border-transparent', 'text-slate-500');
+        activeTabBtn.classList.add('border-brand-600', 'text-brand-700');
       }
 
-      // Mobile Nav Dock Styles
-      const mobileTabs = ['overview', 'deals', 'cards', 'line'];
-      mobileTabs.forEach(t => {
-        const btn = document.getElementById(`mobileNav-${t}`);
-        if (!btn) return;
-        if (t === tabId) {
-          btn.classList.remove('text-slate-400', 'font-medium');
-          btn.classList.add('text-brand-600', 'font-bold');
-        } else {
-          btn.classList.remove('text-brand-600', 'font-bold');
-          btn.classList.add('text-slate-400', 'font-medium');
+      ['overview', 'deals', 'notes', 'cards'].forEach(id => {
+        const mBtn = document.getElementById(`mobileNav-${id}`);
+        if (mBtn) {
+          if (id === tabId) {
+            mBtn.className = 'flex flex-col items-center gap-0.5 py-1 text-brand-600 font-bold';
+          } else {
+            mBtn.className = 'flex flex-col items-center gap-0.5 py-1 text-slate-400 hover:text-slate-600 font-medium';
+          }
         }
       });
-
-      if (tabId === 'overview') renderPipelineKanban();
-      if (tabId === 'deals') renderDeals();
-      if (tabId === 'cards') renderCards();
-      if (tabId === 'line') updateLinePreview();
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* ==========================================================================
-       View Rendering & Statistics Calculations
-       ========================================================================== */
-    function renderStats() {
-      // 1. Today & Overdue Follow-ups
-      const todayList = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp === todayStr);
-      const overdueList = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp < todayStr);
+    /* --------------------------------------------------------------------------
+       OVERVIEW: 1. 即時備忘錄 (QUICK SCRATCHPAD - AT THE VERY TOP)
+       -------------------------------------------------------------------------- */
+    function renderOverviewNotes() {
+      const container = document.getElementById('overviewNotesListContainer');
+      const badge = document.getElementById('overviewNotesBadge');
+      if (!container || !badge) return;
 
-      document.getElementById('statTodayCount').textContent = todayList.length;
-      const overdueHint = document.getElementById('statOverdueHint');
-      if (overdueList.length > 0) {
-        overdueHint.className = 'text-[10px] text-rose-600 font-bold mt-0.5 truncate flex items-center gap-1';
-        overdueHint.innerHTML = `<i class="ph-bold ph-warning-circle text-[10px]"></i> 逾期未追蹤 ${overdueList.length} 件`;
-      } else {
-        overdueHint.className = 'text-[10px] text-emerald-600 font-medium mt-0.5 truncate flex items-center gap-1';
-        overdueHint.innerHTML = `<i class="ph-bold ph-check-circle text-[10px]"></i> 無逾期案件`;
-      }
-
-      // 2. Active Deals & Total Amount
-      const activeDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST');
-      const totalAmount = activeDeals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
-      document.getElementById('statActiveCount').textContent = activeDeals.length;
-      document.getElementById('statTotalAmount').textContent = `NT$ ${formatNumber(totalAmount)}`;
-
-      // 3. Scratchpad Pending Memos
-      const pendingNotes = quickNotes.filter(n => !n.completed);
-      const noteCountEl = document.getElementById('statNotePendingCount');
-      if (noteCountEl) noteCountEl.textContent = pendingNotes.length;
-
-      // Update Header Date Badge
-      const dateBadge = document.getElementById('overviewDateBadge');
-      if (dateBadge) {
-        const today = new Date();
-        const days = ['日', '一', '二', '三', '四', '五', '六'];
-        dateBadge.textContent = `${today.getMonth() + 1}月${today.getDate()}日 (週${days[today.getDay()]})`;
-      }
-    }
-
-    function renderTodayDeals() {
-      const container = document.getElementById('todayDealsContainer');
-      const urgentDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp <= todayStr)
-                               .sort((a, b) => a.nextFollowUp.localeCompare(b.nextFollowUp));
-
-      if (urgentDeals.length === 0) {
-        container.innerHTML = `
-          <div class="py-7 text-center space-y-2 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-lg">
-              <i class="ph-fill ph-check"></i>
-            </div>
-            <p class="text-xs font-bold text-slate-700">太棒了！今日無待追蹤或逾期案件</p>
-            <p class="text-[11px] text-slate-400">目前所有拜訪與商機進度均已妥善安排</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = urgentDeals.map(d => {
-        const isOverdue = d.nextFollowUp < todayStr;
-        return `
-          <div class="p-3.5 rounded-xl border ${isOverdue ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200 bg-white hover:border-brand-300'} transition shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-black px-1.5 py-0.5 rounded ${isOverdue ? 'bg-rose-100 text-rose-700' : 'bg-brand-100 text-brand-800'}">
-                  ${isOverdue ? '已逾期' : '今日應訪'}
-                </span>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-800">${escapeHtml(d.title)}</h3>
-              </div>
-              <p class="text-[11px] text-slate-500 font-medium">
-                ${escapeHtml(d.company || '個人買家')}・${escapeHtml(d.contact || '無窗口')}・${d.phone ? `<a href="tel:${d.phone}" class="text-brand-600 font-bold hover:underline inline-flex items-center gap-0.5"><i class="ph-bold ph-phone"></i>${d.phone}</a>` : '無電話'}
-              </p>
-              ${d.notes ? `<p class="text-[11px] text-slate-600 bg-slate-100/80 px-2 py-1 rounded-md mt-1 italic">${escapeHtml(d.notes)}</p>` : ''}
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
-              <button onclick="quickExtendDeal('${d.id}', 3)" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-semibold transition active:scale-95">
-                +3天
-              </button>
-              <button onclick="quickExtendDeal('${d.id}', 7)" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-semibold transition active:scale-95">
-                +1週
-              </button>
-              <button onclick="markDealWon('${d.id}')" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg font-bold transition active:scale-95 flex items-center gap-1">
-                <i class="ph-bold ph-check"></i> 完成
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderPipelineKanban() {
-      const container = document.getElementById('pipelineKanbanGrid');
-      const stages = [
-        { key: 'LEAD', label: '初步接洽', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-        { key: 'PROPOSAL', label: '方案報價', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-        { key: 'NEGOTIATION', label: '商務談判', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-        { key: 'WON', label: '贏單簽約', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-        { key: 'LOST', label: '暫緩結案', color: 'bg-slate-100 text-slate-600 border-slate-200' }
-      ];
-
-      container.innerHTML = stages.map(s => {
-        const count = deals.filter(d => d.stage === s.key).length;
-        const total = deals.filter(d => d.stage === s.key).reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
-        return `
-          <div onclick="setDealsFilter('${s.key}'); switchTab('deals');" class="p-3 rounded-xl border ${s.color} hover:shadow-sm cursor-pointer transition flex flex-col justify-between">
-            <div>
-              <span class="text-[11px] font-bold block truncate">${s.label}</span>
-              <span class="text-lg font-black mt-1 block">${count} <span class="text-[10px] font-normal">件</span></span>
-            </div>
-            <span class="text-[10px] opacity-75 font-semibold mt-1">NT$ ${formatNumber(total)}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderDeals() {
-      const container = document.getElementById('dealsListContainer');
-      const searchKeyword = (document.getElementById('inputSearchDeals')?.value || '').trim().toLowerCase();
-
-      let filtered = deals.filter(d => {
-        const matchesStage = currentDealsFilter === 'ALL' ? true : d.stage === currentDealsFilter;
-        const matchesSearch = !searchKeyword ||
-          d.title.toLowerCase().includes(searchKeyword) ||
-          d.company.toLowerCase().includes(searchKeyword) ||
-          d.contact.toLowerCase().includes(searchKeyword);
-        return matchesStage && matchesSearch;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="bg-white rounded-2xl p-8 text-center border border-slate-100 space-y-2">
-            <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-2xl">
-              <i class="ph-bold ph-kanban"></i>
-            </div>
-            <p class="text-xs font-bold text-slate-600">目前查無符合條件之商機案件</p>
-            <p class="text-[11px] text-slate-400">點選右上角「新增案件」即可快速建檔追蹤！</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = filtered.map(d => {
-        const stageBadge = getStageBadge(d.stage);
-        const isUrgent = d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp <= todayStr;
-        return `
-          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:border-slate-200 transition space-y-3">
-            <div class="flex items-start justify-between gap-2">
-              <div class="space-y-1 flex-1">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${stageBadge.cls}">
-                    ${stageBadge.label}
-                  </span>
-                  <h3 class="text-sm font-bold text-slate-900">${escapeHtml(d.title)}</h3>
-                </div>
-                <p class="text-xs text-slate-500 font-medium flex items-center gap-2 flex-wrap">
-                  <span><i class="ph-bold ph-buildings text-slate-400"></i> ${escapeHtml(d.company || '未填寫公司')}</span>
-                  <span>・</span>
-                  <span><i class="ph-bold ph-user text-slate-400"></i> ${escapeHtml(d.contact || '無聯絡人')}</span>
-                  ${d.phone ? `<span>・</span><a href="tel:${d.phone}" class="text-brand-600 font-bold hover:underline inline-flex items-center gap-0.5"><i class="ph-bold ph-phone"></i>${d.phone}</a>` : ''}
-                </p>
-              </div>
-              <div class="text-right shrink-0">
-                <span class="text-xs text-slate-400 block">預估金額</span>
-                <span class="text-sm font-black text-slate-800">NT$ ${formatNumber(d.amount)}</span>
-              </div>
-            </div>
-
-            ${d.notes ? `<div class="bg-slate-50 p-2.5 rounded-xl text-xs text-slate-600 leading-relaxed">${escapeHtml(d.notes)}</div>` : ''}
-
-            <div class="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
-              <div class="flex items-center gap-1 font-medium ${isUrgent ? 'text-rose-600 font-bold' : 'text-slate-500'}">
-                <i class="ph-bold ph-calendar"></i>
-                <span>下次追蹤：${d.nextFollowUp || '未定'}</span>
-                ${isUrgent ? `<span class="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.2 rounded ml-1 font-bold">需立即追蹤</span>` : ''}
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button onclick="openDealModal('${d.id}')" class="text-slate-500 hover:text-slate-800 p-1 rounded-lg hover:bg-slate-100 transition" title="編輯案件">
-                  <i class="ph-bold ph-pencil-simple text-base"></i>
-                </button>
-                <button onclick="deleteDeal('${d.id}')" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition" title="刪除案件">
-                  <i class="ph-bold ph-trash text-base"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderCards() {
-      const container = document.getElementById('cardsGridContainer');
-      const searchKeyword = (document.getElementById('inputSearchCards')?.value || '').trim().toLowerCase();
-
-      let filtered = cards.filter(c => {
-        if (!searchKeyword) return true;
-        return c.name.toLowerCase().includes(searchKeyword) ||
-               (c.company && c.company.toLowerCase().includes(searchKeyword)) ||
-               (c.title && c.title.toLowerCase().includes(searchKeyword)) ||
-               (c.tags && c.tags.toLowerCase().includes(searchKeyword));
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-slate-100 space-y-2">
-            <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-2xl">
-              <i class="ph-bold ph-address-book"></i>
-            </div>
-            <p class="text-xs font-bold text-slate-600">名片冊目前無相符資料</p>
-            <p class="text-[11px] text-slate-400">點選上方「手動建檔」即可快速新增商務聯絡人！</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = filtered.map(card => {
-        const tagList = (card.tags || '').split(/[,，\s]+/).filter(Boolean);
-        return `
-          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition space-y-3 flex flex-col justify-between">
-            <div class="space-y-2">
-              <div class="flex items-start justify-between">
-                <div>
-                  <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
-                    ${escapeHtml(card.name)}
-                    ${card.title ? `<span class="text-[11px] font-normal text-slate-500">/ ${escapeHtml(card.title)}</span>` : ''}
-                  </h3>
-                  <p class="text-xs font-semibold text-brand-700 mt-0.5">${escapeHtml(card.company || '自由業 / 個人專業顧問')}</p>
-                </div>
-                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">
-                  ${escapeHtml(card.name.substring(0, 1))}
-                </div>
-              </div>
-
-              <div class="space-y-1 text-xs text-slate-600 pt-1">
-                ${card.phone ? `
-                  <div class="flex items-center gap-2">
-                    <i class="ph-bold ph-phone text-slate-400"></i>
-                    <a href="tel:${card.phone}" class="text-brand-600 font-semibold hover:underline">${card.phone}</a>
-                  </div>
-                ` : ''}
-                ${card.email ? `
-                  <div class="flex items-center gap-2 truncate">
-                    <i class="ph-bold ph-envelope-simple text-slate-400"></i>
-                    <a href="mailto:${card.email}" class="hover:underline text-slate-600">${escapeHtml(card.email)}</a>
-                  </div>
-                ` : ''}
-                ${card.address ? `
-                  <div class="flex items-start gap-2 text-[11px] text-slate-500">
-                    <i class="ph-bold ph-map-pin text-slate-400 shrink-0 mt-0.5"></i>
-                    <span class="line-clamp-1">${escapeHtml(card.address)}</span>
-                  </div>
-                ` : ''}
-              </div>
-
-              ${tagList.length > 0 ? `
-                <div class="flex items-center gap-1 flex-wrap pt-1">
-                  ${tagList.map(t => `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">#${escapeHtml(t)}</span>`).join('')}
-                </div>
-              ` : ''}
-            </div>
-
-            <div class="border-t border-slate-100 pt-3 flex items-center justify-between gap-1 text-xs">
-              <button onclick="convertCardToDeal('${card.id}')" class="text-brand-700 hover:text-brand-800 font-bold flex items-center gap-1 py-1 px-1.5 rounded hover:bg-brand-50 transition">
-                <i class="ph-bold ph-plus-circle"></i> 轉為商機
-              </button>
-              <div class="flex items-center gap-1">
-                <button onclick="openCardModal('${card.id}')" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition" title="編輯">
-                  <i class="ph-bold ph-pencil-simple"></i>
-                </button>
-                <button onclick="deleteCard('${card.id}')" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition" title="刪除">
-                  <i class="ph-bold ph-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderScratchpad() {
-      const container = document.getElementById('scratchpadListContainer');
-      if (!container) return;
+      const pendingList = quickNotes.filter(n => !n.completed);
+      badge.textContent = `${pendingList.length} 項待辦`;
+      badge.className = pendingList.length > 0 
+        ? 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800' 
+        : 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600';
 
       if (quickNotes.length === 0) {
         container.innerHTML = `
-          <div class="py-8 text-center space-y-1 text-slate-400">
-            <i class="ph-bold ph-note text-3xl mx-auto block opacity-50"></i>
-            <p class="text-xs font-bold text-slate-600">目前沒有備忘事項</p>
-            <p class="text-[10px]">隨手在上方輸入框輸入事項，快速記錄非商機之交辦工作！</p>
+          <div class="py-5 text-center text-xs text-slate-400 bg-amber-50/20 rounded-xl border border-dashed border-amber-200">
+            目前沒有備忘事項，隨手在上方輸入框記下一件臨時雜務吧！
           </div>
         `;
         return;
       }
 
-      container.innerHTML = quickNotes.map(n => `
-        <div class="flex items-center justify-between p-3 rounded-xl border ${n.completed ? 'bg-slate-50/80 border-slate-200 opacity-60' : 'bg-white border-slate-200'} transition gap-2">
+      const sorted = [...quickNotes].sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
+
+      container.innerHTML = sorted.map(n => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl border ${n.completed ? 'bg-slate-50/80 border-slate-200 opacity-60' : 'bg-amber-50/40 border-amber-200/90'} transition gap-2 group">
           <div class="flex items-center gap-2.5 flex-1 min-w-0">
-            <input type="checkbox" onchange="toggleScratchpadNote('${n.id}')" ${n.completed ? 'checked' : ''} class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer">
-            <span class="text-xs ${n.completed ? 'line-through text-slate-400' : 'text-slate-800 font-medium'} truncate">${escapeHtml(n.text)}</span>
+            <input type="checkbox" ${n.completed ? 'checked' : ''} onchange="toggleQuickNote('${n.id}')" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer shrink-0">
+            <span class="text-xs ${n.completed ? 'line-through text-slate-400' : 'font-bold text-slate-800'} truncate">
+              ${escapeHtml(n.text)}
+            </span>
+            <span class="text-[10px] text-slate-400 hidden sm:inline shrink-0">(${n.createdAt})</span>
           </div>
           <div class="flex items-center gap-1 shrink-0">
-            <button onclick="sendScratchpadNoteToLine('${n.id}')" class="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition" title="推播至 LINE">
+            <button onclick="sendSingleNoteToLine('${n.id}')" class="text-slate-400 hover:text-emerald-600 p-1" title="傳送至 LINE">
               <i class="ph-bold ph-paper-plane-tilt text-sm"></i>
             </button>
-            <button onclick="deleteScratchpadNote('${n.id}')" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition" title="刪除備忘">
+            <button onclick="deleteQuickNote('${n.id}')" class="text-slate-400 hover:text-rose-600 p-1" title="刪除備忘">
               <i class="ph-bold ph-trash text-sm"></i>
             </button>
           </div>
@@ -1150,266 +915,10 @@
       `).join('');
     }
 
-    /* ==========================================================================
-       Deals & Card Modal Handlers
-       ========================================================================== */
-    function openDealModal(dealId = null) {
-      const form = document.getElementById('formDeal');
-      form.reset();
-      const titleEl = document.getElementById('modalDealTitle');
-      const hiddenId = document.getElementById('inputDealId');
-
-      if (dealId) {
-        const deal = deals.find(d => d.id === dealId);
-        if (!deal) return;
-        titleEl.textContent = '編輯商機案件';
-        hiddenId.value = deal.id;
-        document.getElementById('inputDealName').value = deal.title;
-        document.getElementById('inputDealCompany').value = deal.company || '';
-        document.getElementById('inputDealContact').value = deal.contact || '';
-        document.getElementById('inputDealPhone').value = deal.phone || '';
-        document.getElementById('inputDealAmount').value = deal.amount || 0;
-        document.getElementById('inputDealStage').value = deal.stage || 'LEAD';
-        document.getElementById('inputDealFollowUp').value = deal.nextFollowUp || todayStr;
-        document.getElementById('inputDealNotes').value = deal.notes || '';
-      } else {
-        titleEl.textContent = '新增商機案件';
-        hiddenId.value = '';
-        document.getElementById('inputDealFollowUp').value = todayStr;
-      }
-
-      const modal = document.getElementById('modalDeal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeDealModal() {
-      const modal = document.getElementById('modalDeal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function saveDeal(e) {
+    function handleOverviewAddNote(e) {
       e.preventDefault();
-      const id = document.getElementById('inputDealId').value;
-      const title = document.getElementById('inputDealName').value.trim();
-      const company = document.getElementById('inputDealCompany').value.trim();
-      const contact = document.getElementById('inputDealContact').value.trim();
-      const phone = document.getElementById('inputDealPhone').value.trim();
-      const amount = Number(document.getElementById('inputDealAmount').value) || 0;
-      const stage = document.getElementById('inputDealStage').value;
-      const nextFollowUp = document.getElementById('inputDealFollowUp').value;
-      const notes = document.getElementById('inputDealNotes').value.trim();
-
-      if (!title || !nextFollowUp) {
-        showToast('請填寫案件名稱與追蹤日期！', 'warning');
-        return;
-      }
-
-      if (id) {
-        // Edit existing deal
-        const idx = deals.findIndex(d => d.id === id);
-        if (idx !== -1) {
-          deals[idx] = { ...deals[idx], title, company, contact, phone, amount, stage, nextFollowUp, notes };
-          showToast('案件資料已成功更新！');
-        }
-      } else {
-        // Add new deal
-        const newDeal = {
-          id: 'deal-' + Date.now(),
-          title,
-          company,
-          contact,
-          phone,
-          amount,
-          stage,
-          nextFollowUp,
-          notes,
-          createdAt: todayStr
-        };
-        deals.unshift(newDeal);
-        showToast('已建立新商機案件！');
-      }
-
-      saveState();
-      renderAllViews();
-      closeDealModal();
-    }
-
-    function deleteDeal(id) {
-      deals = deals.filter(d => d.id !== id);
-      saveState();
-      renderAllViews();
-      showToast('案件已刪除！');
-    }
-
-    function quickExtendDeal(id, days) {
-      const deal = deals.find(d => d.id === id);
-      if (!deal) return;
-      const baseDate = new Date();
-      baseDate.setDate(baseDate.getDate() + days);
-      deal.nextFollowUp = baseDate.toISOString().split('T')[0];
-      saveState();
-      renderAllViews();
-      showToast(`已將案件順延 ${days} 天追蹤！`);
-    }
-
-    function markDealWon(id) {
-      const deal = deals.find(d => d.id === id);
-      if (!deal) return;
-      deal.stage = 'WON';
-      saveState();
-      renderAllViews();
-      showToast('恭喜！案件已完成並結案！');
-    }
-
-    function setDealsFilter(filter) {
-      currentDealsFilter = filter;
-      document.querySelectorAll('.deals-filter-btn').forEach(btn => {
-        btn.classList.remove('bg-slate-900', 'text-white');
-        btn.classList.add('bg-slate-100', 'text-slate-600');
-      });
-      const activeBtn = document.getElementById(`filterBtn-${filter}`);
-      if (activeBtn) {
-        activeBtn.classList.remove('bg-slate-100', 'text-slate-600');
-        activeBtn.classList.add('bg-slate-900', 'text-white');
-      }
-      renderDeals();
-    }
-
-    function filterDeals() {
-      renderDeals();
-    }
-
-    function filterCards() {
-      renderCards();
-    }
-
-    /* ==========================================================================
-       Card Modal Handlers
-       ========================================================================== */
-    function openCardModal(cardId = null) {
-      const form = document.getElementById('formCard');
-      form.reset();
-      const titleEl = document.getElementById('modalCardTitle');
-      const hiddenId = document.getElementById('inputCardId');
-
-      if (cardId) {
-        const card = cards.find(c => c.id === cardId);
-        if (!card) return;
-        titleEl.textContent = '編輯名片聯絡人';
-        hiddenId.value = card.id;
-        document.getElementById('inputCardName').value = card.name;
-        document.getElementById('inputCardTitle').value = card.title || '';
-        document.getElementById('inputCardCompany').value = card.company || '';
-        document.getElementById('inputCardPhone').value = card.phone || '';
-        document.getElementById('inputCardEmail').value = card.email || '';
-        document.getElementById('inputCardAddress').value = card.address || '';
-        document.getElementById('inputCardTags').value = card.tags || '';
-        document.getElementById('inputCardNotes').value = card.notes || '';
-      } else {
-        titleEl.textContent = '建立聯絡人名片';
-        hiddenId.value = '';
-      }
-
-      const modal = document.getElementById('modalCard');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeCardModal() {
-      const modal = document.getElementById('modalCard');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function saveCard(e) {
-      e.preventDefault();
-      const id = document.getElementById('inputCardId').value;
-      const name = document.getElementById('inputCardName').value.trim();
-      const title = document.getElementById('inputCardTitle').value.trim();
-      const company = document.getElementById('inputCardCompany').value.trim();
-      const phone = document.getElementById('inputCardPhone').value.trim();
-      const email = document.getElementById('inputCardEmail').value.trim();
-      const address = document.getElementById('inputCardAddress').value.trim();
-      const tags = document.getElementById('inputCardTags').value.trim();
-      const notes = document.getElementById('inputCardNotes').value.trim();
-
-      if (!name || !phone) {
-        showToast('請填寫姓名與電話號碼！', 'warning');
-        return;
-      }
-
-      if (id) {
-        const idx = cards.findIndex(c => c.id === id);
-        if (idx !== -1) {
-          cards[idx] = { ...cards[idx], name, title, company, phone, email, address, tags, notes };
-          showToast('名片聯絡人已更新！');
-        }
-      } else {
-        const newCard = {
-          id: 'card-' + Date.now(),
-          name,
-          title,
-          company,
-          phone,
-          email,
-          address,
-          tags,
-          notes,
-          createdAt: todayStr
-        };
-        cards.unshift(newCard);
-        showToast('名片已成功建檔！');
-      }
-
-      saveState();
-      renderCards();
-      closeCardModal();
-    }
-
-    function deleteCard(id) {
-      cards = cards.filter(c => c.id !== id);
-      saveState();
-      renderCards();
-      showToast('名片已刪除！');
-    }
-
-    function convertCardToDeal(cardId) {
-      const card = cards.find(c => c.id === cardId);
-      if (!card) return;
-
-      openDealModal();
-      document.getElementById('inputDealName').value = `${card.company || card.name} - 合作商機`;
-      document.getElementById('inputDealCompany').value = card.company || '';
-      document.getElementById('inputDealContact').value = `${card.name} ${card.title || ''}`.trim();
-      document.getElementById('inputDealPhone').value = card.phone || '';
-      document.getElementById('inputDealNotes').value = `自名片冊轉入。備忘：${card.notes || '無'}`;
-    }
-
-    /* ==========================================================================
-       Scratchpad (Quick Notes) Handlers
-       ========================================================================== */
-    function openScratchpadModal() {
-      const modal = document.getElementById('modalScratchpad');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      renderScratchpad();
-      setTimeout(() => {
-        document.getElementById('inputScratchpadNote')?.focus();
-      }, 100);
-    }
-
-    function closeScratchpadModal() {
-      const modal = document.getElementById('modalScratchpad');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function addScratchpadNote(e) {
-      e.preventDefault();
-      const input = document.getElementById('inputScratchpadNote');
-      const text = input.value.trim();
+      const input = document.getElementById('overviewQuickNoteInput');
+      const text = (input.value || '').trim();
       if (!text) return;
 
       const newNote = {
@@ -1420,335 +929,1054 @@
       };
 
       quickNotes.unshift(newNote);
+      localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(quickNotes));
       input.value = '';
-      saveState();
-      renderScratchpad();
-      showToast('已記錄備忘記事！');
+      renderOverviewNotes();
+      renderDedicatedNotes();
+      showToast('已加入即時備忘錄', 'success');
+      triggerAutoSync();
     }
 
-    function toggleScratchpadNote(id) {
-      const note = quickNotes.find(n => n.id === id);
-      if (!note) return;
-      note.completed = !note.completed;
-      saveState();
-      renderScratchpad();
-    }
+    /* --------------------------------------------------------------------------
+       OVERVIEW: 2. 待追蹤拜訪清單 (ENLARGED & SORTED STRICTLY BY DATE)
+       -------------------------------------------------------------------------- */
+    function renderFollowUpOverview() {
+      const container = document.getElementById('todayDealsContainer');
+      const pendingBadge = document.getElementById('overviewPendingBadge');
+      const dateBadge = document.getElementById('overviewDateBadge');
 
-    function deleteScratchpadNote(id) {
-      quickNotes = quickNotes.filter(n => n.id !== id);
-      saveState();
-      renderScratchpad();
-      showToast('備忘已刪除！');
-    }
+      const days = ['日', '一', '二', '三', '四', '五', '六'];
+      dateBadge.textContent = `${now.getMonth() + 1}月${now.getDate()}日 (週${days[now.getDay()]})`;
 
-    function sendScratchpadNoteToLine(id) {
-      const note = quickNotes.find(n => n.id === id);
-      if (!note) return;
+      // Active deals, sorted strictly by nextFollowUp ASC
+      const activeDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST')
+                               .sort((a, b) => (a.nextFollowUp || '').localeCompare(b.nextFollowUp || ''));
 
-      if (!lineConfig.webhookUrl) {
-        showToast('請先至「LINE提醒」分頁填寫 Webhook URL！', 'warning');
-        return;
-      }
+      const overdueList = activeDeals.filter(d => d.nextFollowUp < todayStr);
+      const todayList = activeDeals.filter(d => d.nextFollowUp === todayStr);
+      const totalUrgent = overdueList.length + todayList.length;
 
-      showToast('正在發送記事至 LINE...');
-      const payload = {
-        type: 'SCRATCHPAD_NOTE',
-        note: note.text,
-        timestamp: new Date().toISOString()
-      };
+      pendingBadge.textContent = `${totalUrgent} 件待辦 (${activeDeals.length} 件排程中)`;
+      pendingBadge.className = overdueList.length > 0 
+        ? 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200' 
+        : 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
 
-      fetch(lineConfig.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
-      .then(() => showToast('記事已發送至 LINE！'))
-      .catch(() => showToast('已發送 Webhook 請求！'));
-    }
-
-    function sendAllPendingNotesToLine() {
-      const pending = quickNotes.filter(n => !n.completed);
-      if (pending.length === 0) {
-        showToast('目前沒有未完成的記事！', 'info');
-        return;
-      }
-
-      if (!lineConfig.webhookUrl) {
-        showToast('請先至「LINE提醒」分頁填寫 Webhook URL！', 'warning');
-        return;
-      }
-
-      showToast(`正在發送 ${pending.length} 則待辦記事至 LINE...`);
-      const payload = {
-        type: 'SCRATCHPAD_BULK',
-        notes: pending.map(p => p.text),
-        timestamp: new Date().toISOString()
-      };
-
-      fetch(lineConfig.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
-      .then(() => showToast('所有待辦記事已推播至 LINE！'))
-      .catch(() => showToast('已發送 Webhook 請求！'));
-    }
-
-    /* ==========================================================================
-       Google Sheets Sync Integration
-       ========================================================================== */
-    function openGoogleSheetsModal() {
-      document.getElementById('inputGSheetUrl').value = gsheetUrl || '';
-      document.getElementById('checkGSheetAutoSync').checked = gsheetAutoSync;
-      const lastSync = localStorage.getItem(STORAGE_KEY_GSHEET_LAST_SYNC);
-      document.getElementById('gsheetLastSyncTime').textContent = lastSync ? new Date(lastSync).toLocaleString() : '尚未同步';
-
-      const modal = document.getElementById('modalGoogleSheets');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeGoogleSheetsModal() {
-      const modal = document.getElementById('modalGoogleSheets');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function updateGoogleSheetsUIState() {
-      const dot = document.getElementById('gsheetStatusDot');
-      const text = document.getElementById('gsheetStatusText');
-      if (!dot || !text) return;
-
-      if (!gsheetUrl) {
-        dot.className = 'w-2 h-2 rounded-full bg-slate-300';
-        text.textContent = '雲端同步';
-      } else if (isGSheetSyncing) {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
-        text.textContent = '同步中...';
-      } else {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        text.textContent = '已連線';
-      }
-    }
-
-    function saveGSheetsConfig() {
-      const inputUrl = document.getElementById('inputGSheetUrl').value.trim();
-      const checkAuto = document.getElementById('checkGSheetAutoSync').checked;
-
-      gsheetUrl = inputUrl;
-      gsheetAutoSync = checkAuto;
-
-      localStorage.setItem(STORAGE_KEY_GSHEET_URL, gsheetUrl);
-      localStorage.setItem(STORAGE_KEY_GSHEET_AUTOSYNC, JSON.stringify(gsheetAutoSync));
-
-      updateGoogleSheetsUIState();
-      closeGoogleSheetsModal();
-      showToast('Google 試算表同步設定已儲存！');
-
-      if (gsheetUrl) {
-        syncWithGoogleSheets('push', false);
-      }
-    }
-
-    async function syncWithGoogleSheets(action = 'push', isBackground = false) {
-      if (!gsheetUrl) return;
-      if (isGSheetSyncing) return;
-
-      isGSheetSyncing = true;
-      updateGoogleSheetsUIState();
-
-      if (!isBackground) {
-        showToast(action === 'push' ? '正在備份至 Google 試算表...' : '正在從試算表抓取最新資料...');
-      }
-
-      try {
-        const payload = {
-          action: action,
-          timestamp: new Date().toISOString(),
-          data: {
-            deals: deals,
-            cards: cards,
-            quickNotes: quickNotes
-          }
-        };
-
-        const response = await fetch(gsheetUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          if (action === 'pull' && result && result.data) {
-            if (Array.isArray(result.data.deals)) deals = result.data.deals;
-            if (Array.isArray(result.data.cards)) cards = result.data.cards;
-            if (Array.isArray(result.data.quickNotes)) quickNotes = result.data.quickNotes;
-            saveState();
-            renderAllViews();
-          }
-
-          const now = new Date().toISOString();
-          localStorage.setItem(STORAGE_KEY_GSHEET_LAST_SYNC, now);
-          const lastSyncEl = document.getElementById('gsheetLastSyncTime');
-          if (lastSyncEl) lastSyncEl.textContent = new Date(now).toLocaleString();
-
-          if (!isBackground) {
-            showToast(action === 'push' ? '已成功同步至 Google 試算表！' : '已成功取得最新雲端資料！');
-          }
-        }
-      } catch (err) {
-        console.warn('Google Sheets sync notice:', err);
-        if (!isBackground) {
-          showToast('試算表同步完成！');
-        }
-      } finally {
-        isGSheetSyncing = false;
-        updateGoogleSheetsUIState();
-      }
-    }
-
-    function manualPushGSheets() {
-      syncWithGoogleSheets('push', false);
-    }
-
-    function manualPullGSheets() {
-      syncWithGoogleSheets('pull', false);
-    }
-
-    /* ==========================================================================
-       LINE Notification Integration & Modal Form Handlers
-       ========================================================================== */
-    function saveLineConfig() {
-      const webhookUrl = document.getElementById('inputLineWebhookUrl').value.trim();
-      const token = document.getElementById('inputLineToken').value.trim();
-      const userId = document.getElementById('inputLineUserId').value.trim();
-
-      lineConfig = { webhookUrl, token, userId };
-      localStorage.setItem(STORAGE_KEY_LINE, JSON.stringify(lineConfig));
-      showToast('LINE 機器人連線設定已儲存！');
-    }
-
-    function updateLinePreview() {
-      const dateEl = document.getElementById('lineSimDate');
-      if (dateEl) {
-        const today = new Date();
-        dateEl.textContent = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
-      }
-
-      const container = document.getElementById('lineSimContent');
-      if (!container) return;
-
-      const urgentDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp <= todayStr);
-
-      if (urgentDeals.length === 0) {
+      if (activeDeals.length === 0) {
         container.innerHTML = `
-          <div class="py-2 text-center text-slate-500 text-[11px]">
-            <p class="font-bold">今日無待追蹤案件</p>
-            <p class="text-[10px] text-slate-400">所有客戶跟進均在進度中！</p>
+          <div class="py-10 text-center space-y-2 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-xl shadow-sm">
+              <i class="ph-fill ph-check-circle"></i>
+            </div>
+            <div class="space-y-0.5">
+              <p class="text-sm font-bold text-slate-800">目前所有案件皆已完成追蹤！</p>
+              <p class="text-xs text-slate-400">點擊右上角「+ 新增」隨時開拓新的商機。</p>
+            </div>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = urgentDeals.slice(0, 3).map((d, i) => `
-        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800 truncate">${i + 1}. ${escapeHtml(d.title)}</span>
-            <span class="text-[10px] font-bold text-brand-700 bg-brand-50 px-1.5 py-0.2 rounded">NT$ ${formatNumber(d.amount)}</span>
+      container.innerHTML = activeDeals.map(d => {
+        const isOverdue = d.nextFollowUp < todayStr;
+        const isToday = d.nextFollowUp === todayStr;
+        
+        let statusBadgeHtml = '';
+        if (isOverdue) {
+          const diffMs = new Date(todayStr) - new Date(d.nextFollowUp);
+          const diffDays = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+          statusBadgeHtml = `
+            <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-rose-600 text-white shadow-xs flex items-center gap-1">
+              <i class="ph-bold ph-warning-circle"></i> 已逾期 ${diffDays} 天
+            </span>
+          `;
+        } else if (isToday) {
+          statusBadgeHtml = `
+            <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-xs flex items-center gap-1">
+              <i class="ph-bold ph-clock"></i> 今日應追蹤
+            </span>
+          `;
+        } else {
+          statusBadgeHtml = `
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-200 text-slate-700 flex items-center gap-1">
+              <i class="ph-bold ph-calendar-blank"></i> 追蹤日：${d.nextFollowUp}
+            </span>
+          `;
+        }
+
+        const stageBadge = getStageBadge(d.stage);
+
+        return `
+          <div class="p-4 sm:p-5 rounded-2xl border ${isOverdue ? 'border-rose-300 bg-rose-50/40 shadow-sm' : (isToday ? 'border-emerald-300 bg-emerald-50/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300')} transition-all space-y-3.5">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5">
+              <div class="space-y-1.5 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  ${statusBadgeHtml}
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-lg ${stageBadge.cls}">
+                    ${stageBadge.label}
+                  </span>
+                  <span class="text-xs text-slate-400 font-medium">
+                    排程：${d.nextFollowUp}
+                  </span>
+                </div>
+                <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug pt-0.5">
+                  ${escapeHtml(d.title)}
+                </h3>
+              </div>
+              <div class="sm:text-right shrink-0">
+                <span class="text-[11px] text-slate-400 block font-bold">預估商機金額</span>
+                <span class="text-base sm:text-xl font-black text-emerald-700">NT$ ${formatNumber(d.amount)}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-50/90 p-3 rounded-xl border border-slate-200/70">
+              <div class="flex items-center gap-2 text-slate-700">
+                <i class="ph-bold ph-buildings text-base text-slate-400 shrink-0"></i>
+                <span class="font-bold text-slate-900">${escapeHtml(d.company || '個人買家 / 未填公司')}</span>
+              </div>
+              <div class="flex items-center gap-2 text-slate-700">
+                <i class="ph-bold ph-user text-base text-slate-400 shrink-0"></i>
+                <span class="font-medium">${escapeHtml(d.contact || '無特定窗口')}</span>
+                ${d.phone ? `
+                  <span class="text-slate-300">|</span>
+                  <a href="tel:${d.phone}" class="text-emerald-700 hover:text-emerald-800 font-bold hover:underline inline-flex items-center gap-1">
+                    <i class="ph-bold ph-phone-call text-sm"></i> ${escapeHtml(d.phone)}
+                  </a>
+                ` : '<span class="text-slate-400">（無電話）</span>'}
+              </div>
+            </div>
+
+            ${d.notes ? `
+              <div class="bg-amber-50/80 border border-amber-200/90 p-3 rounded-xl text-xs text-amber-950 leading-relaxed space-y-1">
+                <span class="font-black text-[11px] text-amber-800 uppercase tracking-wide flex items-center gap-1">
+                  <i class="ph-fill ph-note-pencil"></i> 上次追蹤要點與進度：
+                </span>
+                <p class="font-medium pl-1">${escapeHtml(d.notes)}</p>
+              </div>
+            ` : ''}
+
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 flex-wrap gap-2">
+              <button onclick="openDealModal('${d.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 active:scale-95">
+                <i class="ph-bold ph-pencil-simple text-sm"></i> 編輯詳情
+              </button>
+
+              <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+                <button onclick="quickExtendDeal('${d.id}', 3)" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-bold transition active:scale-95" title="順延 3 天">
+                  +3天
+                </button>
+                <button onclick="quickExtendDeal('${d.id}', 7)" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-bold transition active:scale-95" title="順延 1 週">
+                  +1週
+                </button>
+                <button onclick="markDealWon('${d.id}')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-bold transition active:scale-95 flex items-center gap-1 shadow-xs">
+                  <i class="ph-bold ph-check text-sm"></i> 贏單結案
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="text-[11px] text-slate-500">
-            <span>${escapeHtml(d.company || '公司')}</span>・<span>${escapeHtml(d.contact || '窗口')}</span>
+        `;
+      }).join('');
+    }
+
+    /* --------------------------------------------------------------------------
+       OVERVIEW: 3. PIPELINE KANBAN SUMMARY
+       -------------------------------------------------------------------------- */
+    function renderPipelineSummary() {
+      const stages = [
+        { key: 'LEAD', label: '初次接洽' },
+        { key: 'PROPOSAL', label: '方案報價' },
+        { key: 'NEGOTIATION', label: '商務談判' },
+        { key: 'WON', label: '贏單簽約' },
+        { key: 'LOST', label: '暫緩結案' }
+      ];
+
+      const grid = document.getElementById('pipelineKanbanGrid');
+      grid.innerHTML = stages.map(s => {
+        const count = deals.filter(d => d.stage === s.key).length;
+        const sum = deals.filter(d => d.stage === s.key).reduce((acc, cur) => acc + (cur.amount || 0), 0);
+
+        return `
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-center space-y-1">
+            <span class="text-[11px] font-bold text-slate-500 block">${s.label}</span>
+            <span class="text-lg font-black text-slate-900 block">${count}</span>
+            <span class="text-[10px] text-slate-400 block truncate">NT$ ${formatNumber(sum)}</span>
           </div>
-          ${d.notes ? `<div class="text-[10px] text-slate-400 truncate italic">備忘：${escapeHtml(d.notes)}</div>` : ''}
+        `;
+      }).join('');
+    }
+
+    /* --------------------------------------------------------------------------
+       UNIFIED SETTINGS MODAL HANDLERS (OCR, GOOGLE SHEETS, LINE)
+       -------------------------------------------------------------------------- */
+    function openSettingsModal(defaultTab = 'ocr') {
+      populateSettingsInputs();
+      switchSettingsTab(defaultTab);
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    function switchSettingsTab(tabName) {
+      document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
+      const activeContent = document.getElementById(`settingsContent-${tabName}`);
+      if (activeContent) activeContent.classList.remove('hidden');
+
+      document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+        btn.classList.remove('border-purple-600', 'border-emerald-600', 'text-purple-700', 'text-emerald-700', 'bg-white');
+        btn.classList.add('border-transparent', 'text-slate-500');
+      });
+
+      const activeBtn = document.getElementById(`settingsTabBtn-${tabName}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-500');
+        activeBtn.classList.add('bg-white');
+        if (tabName === 'ocr') {
+          activeBtn.classList.add('border-purple-600', 'text-purple-700');
+        } else {
+          activeBtn.classList.add('border-emerald-600', 'text-emerald-700');
+        }
+      }
+    }
+
+    function saveApiKeyFromSettings(e) {
+      e.preventDefault();
+      const val = document.getElementById('settingsGeminiApiKeyInput').value.trim();
+      geminiApiKey = val;
+      localStorage.setItem(STORAGE_KEYS.GEMINI_KEY, val);
+      populateSettingsInputs();
+      showToast('Gemini API Key 已儲存', 'success');
+    }
+
+    function saveSheetsConfigFromSettings(e) {
+      e.preventDefault();
+      sheetsConfig.webAppUrl = document.getElementById('settingsSheetsUrlInput').value.trim();
+      sheetsConfig.autoSync = document.getElementById('settingsAutoSyncCheckbox').checked;
+      localStorage.setItem(STORAGE_KEYS.SHEETS, JSON.stringify(sheetsConfig));
+      
+      if (!lineConfig.webhookUrl && sheetsConfig.webAppUrl) {
+        lineConfig.webhookUrl = sheetsConfig.webAppUrl;
+        localStorage.setItem(STORAGE_KEYS.LINE, JSON.stringify(lineConfig));
+        populateSettingsInputs();
+      }
+
+      updateSyncStatusUI();
+      showToast('Google 試算表設定已儲存', 'success');
+    }
+
+    function saveLineSettingsFromSettings(e) {
+      e.preventDefault();
+      lineConfig.webhookUrl = document.getElementById('settingsLineWebhookInput').value.trim();
+      localStorage.setItem(STORAGE_KEYS.LINE, JSON.stringify(lineConfig));
+      showToast('LINE Webhook 已儲存', 'success');
+    }
+
+    function updateSyncStatusUI() {
+      const dot = document.getElementById('syncIndicatorDot');
+      if (dot) {
+        if (sheetsConfig.webAppUrl) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500 absolute top-1.5 right-1.5 ring-2 ring-white';
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-slate-400 absolute top-1.5 right-1.5 ring-2 ring-white';
+        }
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       CARD OCR & CAMERA DISPATCH
+       -------------------------------------------------------------------------- */
+    function openAddCardChoiceModal() {
+      document.getElementById('addCardChoiceModal').classList.remove('hidden');
+    }
+
+    function closeAddCardChoiceModal() {
+      document.getElementById('addCardChoiceModal').classList.add('hidden');
+    }
+
+    function triggerCameraOCR() {
+      if (!geminiApiKey) {
+        closeAddCardChoiceModal();
+        openSettingsModal('ocr');
+        showToast('請先填入您的 Gemini API Key 以啟用 OCR 拍照辨識', 'info');
+        return;
+      }
+      document.getElementById('cardCameraInput').click();
+    }
+
+    async function handleCardImageCaptured(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      closeAddCardChoiceModal();
+      showToast('正在透過 Gemini 視覺 AI 辨識名片中...', 'info');
+
+      try {
+        const base64Data = await resizeImageToBase64(file, 1280);
+        const cardInfo = await callGeminiOCR(base64Data);
+
+        openCardModal();
+        document.getElementById('cardFormName').value = cardInfo.name || '';
+        document.getElementById('cardFormTitle').value = cardInfo.title || '';
+        document.getElementById('cardFormCompany').value = cardInfo.company || '';
+        document.getElementById('cardFormPhone').value = cardInfo.phone || '';
+        document.getElementById('cardFormEmail').value = cardInfo.email || '';
+        document.getElementById('cardFormAddress').value = cardInfo.address || '';
+        document.getElementById('cardFormNotes').value = cardInfo.notes || '相機 OCR 自動辨識輸入';
+        showToast('名片辨識完成！請核對資料後儲存', 'success');
+      } catch (err) {
+        showToast('名片辨識失敗：' + err.message, 'error');
+        openCardModal();
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    function resizeImageToBase64(file, maxDimension) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxDimension) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              }
+            } else {
+              if (height > maxDimension) {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            resolve(dataUrl.split(',')[1]);
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function callGeminiOCR(base64Image) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+
+      const prompt = `
+        你是一位專業的台灣商業名片資訊提取助理。
+        請辨識名片圖檔，嚴格輸出合法的 JSON 物件，請勿輸出任何 Markdown 標籤或額外文字。
+        JSON 欄位規範：
+        - "name": 姓名 (若有中英文姓名請取繁體中文)
+        - "title": 職稱或部門
+        - "company": 公司全銜 (例如：OO科技股份有限公司)
+        - "phone": 手機號碼 (優先找 09 開頭) 或市話附分機
+        - "email": 電子郵件信箱
+        - "address": 公司登記或聯絡地址
+        - "notes": 其他重要備忘（如統編或營業項目）
+      `;
+
+      const payload = {
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: "image/jpeg",
+                  data: base64Image
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: "application/json"
+        }
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.error?.message || `HTTP ${response.status}`);
+      }
+
+      const resData = await response.json();
+      const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) throw new Error('無法擷取名片文字內容');
+
+      return JSON.parse(rawText);
+    }
+
+    /* --------------------------------------------------------------------------
+       DEAL CRUD HANDLERS
+       -------------------------------------------------------------------------- */
+    function openDealModal(dealId = null) {
+      const form = document.getElementById('dealForm');
+      form.reset();
+      document.getElementById('dealFormId').value = '';
+      document.getElementById('dealFormNextFollowUp').value = todayStr;
+      document.getElementById('btnDeleteDeal').classList.add('hidden');
+      document.getElementById('dealModalTitle').textContent = '新增商機案件';
+
+      if (dealId) {
+        const deal = deals.find(d => d.id === dealId);
+        if (deal) {
+          document.getElementById('dealFormId').value = deal.id;
+          document.getElementById('dealFormTitle').value = deal.title || '';
+          document.getElementById('dealFormCompany').value = deal.company || '';
+          document.getElementById('dealFormContact').value = deal.contact || '';
+          document.getElementById('dealFormPhone').value = deal.phone || '';
+          document.getElementById('dealFormAmount').value = deal.amount || 0;
+          document.getElementById('dealFormStage').value = deal.stage || 'LEAD';
+          document.getElementById('dealFormNextFollowUp').value = deal.nextFollowUp || todayStr;
+          document.getElementById('dealFormNotes').value = deal.notes || '';
+          document.getElementById('btnDeleteDeal').classList.remove('hidden');
+          document.getElementById('dealModalTitle').textContent = '編輯商機案件';
+        }
+      }
+
+      document.getElementById('dealModal').classList.remove('hidden');
+    }
+
+    function closeDealModal() {
+      document.getElementById('dealModal').classList.add('hidden');
+    }
+
+    function saveDeal(e) {
+      e.preventDefault();
+      const id = document.getElementById('dealFormId').value;
+      const title = document.getElementById('dealFormTitle').value.trim();
+      const company = document.getElementById('dealFormCompany').value.trim();
+      const contact = document.getElementById('dealFormContact').value.trim();
+      const phone = document.getElementById('dealFormPhone').value.trim();
+      const amount = Number(document.getElementById('dealFormAmount').value) || 0;
+      const stage = document.getElementById('dealFormStage').value;
+      const nextFollowUp = document.getElementById('dealFormNextFollowUp').value;
+      const notes = document.getElementById('dealFormNotes').value.trim();
+
+      if (id) {
+        const index = deals.findIndex(d => d.id === id);
+        if (index !== -1) {
+          deals[index] = { ...deals[index], title, company, contact, phone, amount, stage, nextFollowUp, notes };
+          showToast('案件已成功更新', 'success');
+        }
+      } else {
+        const newDeal = {
+          id: 'deal-' + Date.now(),
+          title, company, contact, phone, amount, stage, nextFollowUp, notes,
+          createdAt: todayStr
+        };
+        deals.unshift(newDeal);
+        showToast('新商機已成功建立', 'success');
+      }
+
+      localStorage.setItem(STORAGE_KEYS.DEALS, JSON.stringify(deals));
+      closeDealModal();
+      renderAllViews();
+      triggerAutoSync();
+    }
+
+    function deleteCurrentDeal() {
+      const id = document.getElementById('dealFormId').value;
+      if (!id) return;
+      if (confirm('確定要刪除這筆商機案件嗎？')) {
+        deals = deals.filter(d => d.id !== id);
+        localStorage.setItem(STORAGE_KEYS.DEALS, JSON.stringify(deals));
+        closeDealModal();
+        renderAllViews();
+        showToast('已刪除商機案件', 'info');
+        triggerAutoSync();
+      }
+    }
+
+    function quickExtendDeal(dealId, days) {
+      const deal = deals.find(d => d.id === dealId);
+      if (!deal) return;
+
+      const baseDate = deal.nextFollowUp ? new Date(deal.nextFollowUp) : new Date();
+      baseDate.setDate(baseDate.getDate() + days);
+      deal.nextFollowUp = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}-${String(baseDate.getDate()).padStart(2, '0')}`;
+
+      localStorage.setItem(STORAGE_KEYS.DEALS, JSON.stringify(deals));
+      renderAllViews();
+      showToast(`已順延至 ${deal.nextFollowUp}`, 'success');
+      triggerAutoSync();
+    }
+
+    function markDealWon(dealId) {
+      const deal = deals.find(d => d.id === dealId);
+      if (!deal) return;
+      deal.stage = 'WON';
+      localStorage.setItem(STORAGE_KEYS.DEALS, JSON.stringify(deals));
+      renderAllViews();
+      showToast('🎉 恭喜贏單成交！', 'success');
+      triggerAutoSync();
+    }
+
+    function filterDealStage(stage) {
+      currentStageFilter = stage;
+      document.querySelectorAll('.deal-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-stage') === stage) {
+          btn.className = 'deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap';
+        } else {
+          btn.className = 'deal-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 whitespace-nowrap';
+        }
+      });
+      renderDealsList();
+    }
+
+    function renderDealsList() {
+      const container = document.getElementById('fullDealsListContainer');
+      const query = (document.getElementById('dealSearchInput').value || '').trim().toLowerCase();
+
+      let filtered = deals.filter(d => {
+        const matchesStage = (currentStageFilter === 'ALL') || (d.stage === currentStageFilter);
+        const matchesSearch = !query || 
+          d.title.toLowerCase().includes(query) || 
+          (d.company && d.company.toLowerCase().includes(query)) ||
+          (d.contact && d.contact.toLowerCase().includes(query));
+        return matchesStage && matchesSearch;
+      });
+
+      filtered.sort((a, b) => (a.nextFollowUp || '').localeCompare(b.nextFollowUp || ''));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">
+            查無相符案件資料
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(d => {
+        const badge = getStageBadge(d.stage);
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 hover:border-brand-300 transition shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold px-2 py-0.5 rounded-md ${badge.cls}">${badge.label}</span>
+                <span class="text-xs text-slate-400">下次追蹤：${d.nextFollowUp || '未定'}</span>
+              </div>
+              <h3 class="text-sm font-black text-slate-900 cursor-pointer hover:text-brand-600" onclick="openDealModal('${d.id}')">
+                ${escapeHtml(d.title)}
+              </h3>
+              <p class="text-xs text-slate-500 flex items-center gap-2">
+                <span><i class="ph-bold ph-buildings"></i> ${escapeHtml(d.company || '-')}</span>
+                <span>•</span>
+                <span><i class="ph-bold ph-user"></i> ${escapeHtml(d.contact || '-')}</span>
+                ${d.phone ? `<span>•</span> <a href="tel:${d.phone}" class="text-emerald-700 font-bold hover:underline">${escapeHtml(d.phone)}</a>` : ''}
+              </p>
+            </div>
+            <div class="flex sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 gap-2 shrink-0">
+              <span class="text-sm font-black text-emerald-700">NT$ ${formatNumber(d.amount)}</span>
+              <div class="flex gap-1.5">
+                <button onclick="openDealModal('${d.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg font-bold">
+                  編輯
+                </button>
+                <button onclick="markDealWon('${d.id}')" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg font-bold">
+                  成交
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* --------------------------------------------------------------------------
+       DEDICATED NOTES SHEET
+       -------------------------------------------------------------------------- */
+    function filterNotes(filterType) {
+      currentNotesFilter = filterType;
+      ['ALL', 'PENDING', 'COMPLETED'].forEach(type => {
+        const btn = document.getElementById(`noteFilter-${type}`);
+        if (btn) {
+          if (type === filterType) {
+            btn.className = 'note-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white';
+          } else {
+            btn.className = 'note-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200';
+          }
+        }
+      });
+      renderDedicatedNotes();
+    }
+
+    function renderDedicatedNotes() {
+      const container = document.getElementById('dedicatedNotesContainer');
+      if (!container) return;
+
+      let list = quickNotes;
+      if (currentNotesFilter === 'PENDING') {
+        list = quickNotes.filter(n => !n.completed);
+      } else if (currentNotesFilter === 'COMPLETED') {
+        list = quickNotes.filter(n => n.completed);
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">
+            目前沒有相符的備忘事項。
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(n => `
+        <div class="bg-white p-3.5 rounded-2xl border ${n.completed ? 'border-slate-200 opacity-60' : 'border-amber-200 shadow-xs'} transition flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <input type="checkbox" ${n.completed ? 'checked' : ''} onchange="toggleQuickNote('${n.id}')" class="rounded text-amber-600 focus:ring-amber-500 w-5 h-5 cursor-pointer shrink-0">
+            <div class="min-w-0">
+              <p class="text-xs sm:text-sm ${n.completed ? 'line-through text-slate-400' : 'font-black text-slate-800'} break-words">
+                ${escapeHtml(n.text)}
+              </p>
+              <span class="text-[10px] text-slate-400">建立時間：${n.createdAt}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="sendSingleNoteToLine('${n.id}')" class="text-xs bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition">
+              <i class="ph-bold ph-paper-plane-tilt"></i>
+              <span class="hidden sm:inline">傳至LINE</span>
+            </button>
+            <button onclick="deleteQuickNote('${n.id}')" class="text-slate-400 hover:text-rose-600 p-1.5" title="刪除">
+              <i class="ph-bold ph-trash text-base"></i>
+            </button>
+          </div>
         </div>
-      `).join('') + (urgentDeals.length > 3 ? `<p class="text-[10px] text-center text-slate-400 font-medium">…還有 ${urgentDeals.length - 3} 件未列出</p>` : '');
+      `).join('');
     }
 
-    function sendLineTestPush() {
-      if (!lineConfig.webhookUrl) {
-        showToast('請先填寫 Webhook URL 方能發送測試！', 'warning');
+    function handleDedicatedAddNote(e) {
+      e.preventDefault();
+      const input = document.getElementById('dedicatedNoteInput');
+      const text = (input.value || '').trim();
+      if (!text) return;
+
+      const newNote = {
+        id: 'note-' + Date.now(),
+        text: text,
+        completed: false,
+        createdAt: todayStr
+      };
+
+      quickNotes.unshift(newNote);
+      localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(quickNotes));
+      input.value = '';
+      renderOverviewNotes();
+      renderDedicatedNotes();
+      showToast('備忘事項已成功建立', 'success');
+      triggerAutoSync();
+    }
+
+    function toggleQuickNote(id) {
+      const note = quickNotes.find(n => n.id === id);
+      if (note) {
+        note.completed = !note.completed;
+        localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(quickNotes));
+        renderOverviewNotes();
+        renderDedicatedNotes();
+        triggerAutoSync();
+      }
+    }
+
+    function deleteQuickNote(id) {
+      quickNotes = quickNotes.filter(n => n.id !== id);
+      localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(quickNotes));
+      renderOverviewNotes();
+      renderDedicatedNotes();
+      showToast('已刪除備忘', 'info');
+      triggerAutoSync();
+    }
+
+    function clearCompletedNotes() {
+      const beforeCount = quickNotes.length;
+      quickNotes = quickNotes.filter(n => !n.completed);
+      if (quickNotes.length === beforeCount) {
+        showToast('目前沒有已完成的備忘項目', 'info');
+        return;
+      }
+      localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(quickNotes));
+      renderOverviewNotes();
+      renderDedicatedNotes();
+      showToast('已清除所有完成項目', 'success');
+      triggerAutoSync();
+    }
+
+    /* --------------------------------------------------------------------------
+       CARDS MANAGEMENT VIEW
+       -------------------------------------------------------------------------- */
+    function renderCardsList() {
+      const container = document.getElementById('cardsGridContainer');
+      const query = (document.getElementById('cardSearchInput').value || '').trim().toLowerCase();
+
+      const filtered = cards.filter(c => {
+        if (!query) return true;
+        return (c.name && c.name.toLowerCase().includes(query)) ||
+               (c.company && c.company.toLowerCase().includes(query)) ||
+               (c.title && c.title.toLowerCase().includes(query)) ||
+               (c.tags && c.tags.toLowerCase().includes(query));
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">
+            查無名片資料，點擊右上角「新增名片」快速拍照或手動建檔。
+          </div>
+        `;
         return;
       }
 
-      showToast('正在發送 LINE 測試推播...');
+      container.innerHTML = filtered.map(c => {
+        const tagList = c.tags ? c.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
 
-      const payload = {
-        type: 'TEST_PUSH',
-        message: '【SalesPilot 測試通知】您的 LINE 機器人已成功與業務追蹤系統連線！',
-        timestamp: new Date().toISOString()
-      };
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/90 hover:border-purple-300 transition shadow-xs flex flex-col justify-between space-y-3">
+            <div class="space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 class="text-base font-black text-slate-900">${escapeHtml(c.name)}</h3>
+                  <span class="text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md inline-block mt-0.5">
+                    ${escapeHtml(c.title || '商務聯絡人')}
+                  </span>
+                </div>
+                <button onclick="openCardModal('${c.id}')" class="text-slate-400 hover:text-slate-600 p-1">
+                  <i class="ph-bold ph-pencil-simple text-sm"></i>
+                </button>
+              </div>
 
-      fetch(lineConfig.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
-      .then(() => showToast('LINE 測試訊息已成功送出！'))
-      .catch(() => showToast('已觸發 Webhook 推播！'));
+              <div class="text-xs text-slate-600 space-y-1">
+                <div class="flex items-center gap-1.5 font-bold text-slate-800">
+                  <i class="ph-bold ph-buildings text-slate-400"></i> ${escapeHtml(c.company || '未填寫公司')}
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <i class="ph-bold ph-phone text-slate-400"></i>
+                  <a href="tel:${c.phone}" class="text-emerald-700 font-bold hover:underline">${escapeHtml(c.phone || '無電話')}</a>
+                </div>
+                ${c.email ? `
+                  <div class="flex items-center gap-1.5 truncate">
+                    <i class="ph-bold ph-envelope-simple text-slate-400"></i> ${escapeHtml(c.email)}
+                  </div>
+                ` : ''}
+              </div>
+
+              ${tagList.length > 0 ? `
+                <div class="flex flex-wrap gap-1 pt-1">
+                  ${tagList.map(t => `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">${escapeHtml(t)}</span>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
+              <a href="tel:${c.phone}" class="flex-1 text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-800 py-1.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                <i class="ph-bold ph-phone-call"></i> 撥號
+              </a>
+              <button onclick="convertCardToDeal('${c.id}')" class="flex-1 text-center bg-purple-50 hover:bg-purple-100 text-purple-800 py-1.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                <i class="ph-bold ph-briefcase"></i> 轉為商機
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function sendTodayDealsToLine() {
+    function openCardModal(cardId = null) {
+      const form = document.getElementById('cardForm');
+      form.reset();
+      document.getElementById('cardFormId').value = '';
+      document.getElementById('btnDeleteCard').classList.add('hidden');
+      document.getElementById('cardModalTitle').textContent = '手動新增名片';
+
+      if (cardId) {
+        const card = cards.find(c => c.id === cardId);
+        if (card) {
+          document.getElementById('cardFormId').value = card.id;
+          document.getElementById('cardFormName').value = card.name || '';
+          document.getElementById('cardFormTitle').value = card.title || '';
+          document.getElementById('cardFormCompany').value = card.company || '';
+          document.getElementById('cardFormPhone').value = card.phone || '';
+          document.getElementById('cardFormEmail').value = card.email || '';
+          document.getElementById('cardFormTags').value = card.tags || '';
+          document.getElementById('cardFormAddress').value = card.address || '';
+          document.getElementById('cardFormNotes').value = card.notes || '';
+          document.getElementById('btnDeleteCard').classList.remove('hidden');
+          document.getElementById('cardModalTitle').textContent = '編輯名片資料';
+        }
+      }
+
+      document.getElementById('cardModal').classList.remove('hidden');
+    }
+
+    function closeCardModal() {
+      document.getElementById('cardModal').classList.add('hidden');
+    }
+
+    function saveCard(e) {
+      e.preventDefault();
+      const id = document.getElementById('cardFormId').value;
+      const name = document.getElementById('cardFormName').value.trim();
+      const title = document.getElementById('cardFormTitle').value.trim();
+      const company = document.getElementById('cardFormCompany').value.trim();
+      const phone = document.getElementById('cardFormPhone').value.trim();
+      const email = document.getElementById('cardFormEmail').value.trim();
+      const tags = document.getElementById('cardFormTags').value.trim();
+      const address = document.getElementById('cardFormAddress').value.trim();
+      const notes = document.getElementById('cardFormNotes').value.trim();
+
+      if (id) {
+        const index = cards.findIndex(c => c.id === id);
+        if (index !== -1) {
+          cards[index] = { ...cards[index], name, title, company, phone, email, tags, address, notes };
+          showToast('名片已更新', 'success');
+        }
+      } else {
+        const newCard = {
+          id: 'card-' + Date.now(),
+          name, title, company, phone, email, tags, address, notes,
+          createdAt: todayStr
+        };
+        cards.unshift(newCard);
+        showToast('名片已成功儲存', 'success');
+      }
+
+      localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
+      closeCardModal();
+      renderCardsList();
+      triggerAutoSync();
+    }
+
+    function deleteCurrentCard() {
+      const id = document.getElementById('cardFormId').value;
+      if (!id) return;
+      if (confirm('確定要刪除這張名片嗎？')) {
+        cards = cards.filter(c => c.id !== id);
+        localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
+        closeCardModal();
+        renderCardsList();
+        showToast('已刪除名片', 'info');
+        triggerAutoSync();
+      }
+    }
+
+    function convertCardToDeal(cardId) {
+      const card = cards.find(c => c.id === cardId);
+      if (!card) return;
+
+      openDealModal();
+      document.getElementById('dealFormTitle').value = `${card.company} - 專案合作洽談`;
+      document.getElementById('dealFormCompany').value = card.company || '';
+      document.getElementById('dealFormContact').value = `${card.name} ${card.title || ''}`.trim();
+      document.getElementById('dealFormPhone').value = card.phone || '';
+      document.getElementById('dealFormNotes').value = `名片備忘：${card.notes || '無'}`;
+      showToast('已帶入名片資訊，請填寫商機金額與追蹤日期', 'info');
+    }
+
+    /* --------------------------------------------------------------------------
+       UNIVERSAL QUICK ADD (+)
+       -------------------------------------------------------------------------- */
+    function openQuickAddModal() {
+      document.getElementById('quickAddModal').classList.remove('hidden');
+    }
+
+    function closeQuickAddModal() {
+      document.getElementById('quickAddModal').classList.add('hidden');
+    }
+
+    /* --------------------------------------------------------------------------
+       GOOGLE SHEETS SYNC
+       -------------------------------------------------------------------------- */
+    function triggerAutoSync() {
+      if (!sheetsConfig.webAppUrl || !sheetsConfig.autoSync) return;
+      clearTimeout(autoSyncTimer);
+      autoSyncTimer = setTimeout(() => {
+        syncToGoogleSheets(true);
+      }, 1500);
+    }
+
+    async function syncToGoogleSheets(isSilent = false) {
+      if (!sheetsConfig.webAppUrl) {
+        if (!isSilent) openSettingsModal('sheets');
+        return;
+      }
+
+      const dot = document.getElementById('syncIndicatorDot');
+      if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping absolute top-1.5 right-1.5';
+
+      try {
+        const payload = {
+          action: 'push',
+          data: { deals, cards, quickNotes }
+        };
+
+        await fetch(sheetsConfig.webAppUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500 absolute top-1.5 right-1.5 ring-2 ring-white';
+        if (!isSilent) showToast('已成功上傳資料至 Google 試算表！', 'success');
+      } catch (err) {
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white';
+        if (!isSilent) showToast('同步失敗：' + err.message, 'error');
+      }
+    }
+
+    async function pullFromGoogleSheets() {
+      if (!sheetsConfig.webAppUrl) {
+        showToast('請先填寫 Apps Script 網址', 'error');
+        return;
+      }
+
+      showToast('正在自試算表抓取最新資料...', 'info');
+
+      try {
+        const response = await fetch(sheetsConfig.webAppUrl + '?action=pull');
+        const res = await response.json();
+
+        if (res.status === 'success' && res.data) {
+          if (Array.isArray(res.data.deals)) deals = res.data.deals;
+          if (Array.isArray(res.data.cards)) cards = res.data.cards;
+          if (Array.isArray(res.data.quickNotes)) quickNotes = res.data.quickNotes;
+
+          localStorage.setItem(STORAGE_KEYS.DEALS, JSON.stringify(deals));
+          localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
+          localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(quickNotes));
+
+          renderAllViews();
+          closeSettingsModal();
+          showToast('成功自 Google 試算表同步資料！', 'success');
+        } else {
+          showToast('試算表格式異常或無資料', 'error');
+        }
+      } catch (err) {
+        showToast('讀取失敗，請確認 Web App 是否已公開授權 (所有人)', 'error');
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       LINE DISPATCH & REAL BOT PUSH
+       -------------------------------------------------------------------------- */
+    function getLineEndpointUrl() {
+      return lineConfig.webhookUrl || sheetsConfig.webAppUrl;
+    }
+
+    async function sendTextMessageToLine(messageText) {
+      const endpoint = getLineEndpointUrl();
+      if (!endpoint) {
+        showToast('請先在設定中填入 Apps Script 網址', 'error');
+        openSettingsModal('line');
+        return false;
+      }
+
+      try {
+        await fetch(endpoint, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'line_push',
+            message: messageText
+          })
+        });
+        return true;
+      } catch (err) {
+        console.error('LINE push failed:', err);
+        return false;
+      }
+    }
+
+    async function sendDailyDealsToLine() {
       const urgentDeals = deals.filter(d => d.stage !== 'WON' && d.stage !== 'LOST' && d.nextFollowUp <= todayStr);
-      if (urgentDeals.length === 0) {
-        showToast('今日沒有需要追蹤的案件！', 'info');
-        return;
+      const pendingNotes = quickNotes.filter(n => !n.completed);
+
+      let lines = [];
+      lines.push(`🔔【SalesPilot 今日追蹤與待辦重點】`);
+      lines.push(`📅 日期：${todayStr}`);
+      lines.push(`--------------------------------`);
+
+      if (pendingNotes.length > 0) {
+        lines.push(`📌 待辦備忘 (${pendingNotes.length} 件)：`);
+        pendingNotes.forEach((n, idx) => {
+          lines.push(`  ${idx + 1}. ${n.text}`);
+        });
+        lines.push(``);
       }
 
-      if (!lineConfig.webhookUrl) {
-        showToast('請先在設定中填寫 Webhook URL！', 'warning');
-        return;
+      if (urgentDeals.length > 0) {
+        lines.push(`🎯 今日應追蹤/逾期案件 (${urgentDeals.length} 件)：`);
+        urgentDeals.forEach((d, idx) => {
+          const isOverdue = d.nextFollowUp < todayStr;
+          lines.push(`  ${idx + 1}. ${isOverdue ? '⚠️ [逾期] ' : '• '}${d.company} (${d.contact || '無窗口'})`);
+          lines.push(`     專案：${d.title} (NT$ ${formatNumber(d.amount)})`);
+          if (d.phone) lines.push(`     電話：${d.phone}`);
+          if (d.notes) lines.push(`     備忘：${d.notes}`);
+        });
+      } else {
+        lines.push(`✨ 目前沒有逾期或今日需追蹤的商機案件！`);
       }
 
-      showToast(`正在推播 ${urgentDeals.length} 筆案件至 LINE...`);
-
-      const payload = {
-        type: 'DAILY_DEALS_REMINDER',
-        date: todayStr,
-        dealsCount: urgentDeals.length,
-        deals: urgentDeals.map(d => ({
-          title: d.title,
-          company: d.company,
-          contact: d.contact,
-          phone: d.phone,
-          amount: d.amount,
-          notes: d.notes
-        })),
-        timestamp: new Date().toISOString()
-      };
-
-      fetch(lineConfig.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
-      .then(() => showToast('今日追蹤清單已成功送往 LINE！'))
-      .catch(() => showToast('已發送今日案件推播！'));
+      showToast('正在發送今日提醒至 LINE...', 'info');
+      const ok = await sendTextMessageToLine(lines.join('\n'));
+      if (ok) {
+        showToast('已將今日重點推播至您的 LINE！', 'success');
+      } else {
+        showToast('推播失敗，請檢查設定與網路連線', 'error');
+      }
     }
 
-    /* ==========================================================================
-       Utility Helpers
-       ========================================================================== */
+    async function sendSingleNoteToLine(noteId) {
+      const note = quickNotes.find(n => n.id === noteId);
+      if (!note) return;
+
+      const text = `📌【SalesPilot 即時備忘提醒】\n• ${note.text}\n建立時間：${note.createdAt}`;
+      showToast('正在轉發備忘至 LINE...', 'info');
+      const ok = await sendTextMessageToLine(text);
+      if (ok) {
+        showToast('備忘已轉發至 LINE', 'success');
+      } else {
+        showToast('轉發失敗', 'error');
+      }
+    }
+
+    async function sendAllNotesToLine() {
+      const pending = quickNotes.filter(n => !n.completed);
+      if (pending.length === 0) {
+        showToast('目前沒有未完成的備忘記事', 'info');
+        return;
+      }
+
+      let lines = [`📌【SalesPilot 未完成備忘彙整 (${pending.length} 項)】`];
+      pending.forEach((n, i) => lines.push(`${i + 1}. ${n.text}`));
+
+      showToast('正在推播備忘清單至 LINE...', 'info');
+      const ok = await sendTextMessageToLine(lines.join('\n'));
+      if (ok) {
+        showToast('未完成備忘已全數推播至 LINE！', 'success');
+      } else {
+        showToast('推播失敗', 'error');
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       UTILITY HELPERS
+       -------------------------------------------------------------------------- */
     function formatNumber(num) {
-      if (!num && num !== 0) return '0';
-      return Number(num).toLocaleString('zh-TW');
-    }
-
-    function getFutureDate(days) {
-      const d = new Date();
-      d.setDate(d.getDate() + days);
-      return d.toISOString().split('T')[0];
-    }
-
-    function getStageBadge(stage) {
-      switch (stage) {
-        case 'LEAD': return { label: '初步接洽', cls: 'bg-amber-100 text-amber-800' };
-        case 'PROPOSAL': return { label: '方案報價', cls: 'bg-blue-100 text-blue-800' };
-        case 'NEGOTIATION': return { label: '商務談判', cls: 'bg-purple-100 text-purple-800' };
-        case 'WON': return { label: '贏單成交', cls: 'bg-emerald-100 text-emerald-800' };
-        case 'LOST': return { label: '暫緩結案', cls: 'bg-slate-100 text-slate-700' };
-        default: return { label: '未知', cls: 'bg-slate-100 text-slate-700' };
-      }
+      return (Number(num) || 0).toLocaleString('zh-TW');
     }
 
     function escapeHtml(str) {
@@ -1761,72 +1989,82 @@
         .replace(/'/g, '&#039;');
     }
 
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toastAlert');
-      const msg = document.getElementById('toastMsg');
-      const icon = document.getElementById('toastIcon');
-
-      if (!toast || !msg || !icon) return;
-
-      msg.textContent = message;
-      if (type === 'warning') {
-        icon.className = 'ph-fill ph-warning-circle text-amber-400 text-base';
-      } else if (type === 'info') {
-        icon.className = 'ph-fill ph-info text-blue-400 text-base';
-      } else {
-        icon.className = 'ph-fill ph-check-circle text-brand-400 text-base';
+    function getStageBadge(stage) {
+      switch (stage) {
+        case 'LEAD': return { label: '初次接洽', cls: 'bg-slate-100 text-slate-700' };
+        case 'PROPOSAL': return { label: '方案報價', cls: 'bg-blue-100 text-blue-700' };
+        case 'WON': return { label: '贏單簽約', cls: 'bg-emerald-100 text-emerald-800' };
+        case 'LOST': return { label: '暫緩結案', cls: 'bg-rose-100 text-rose-700' };
+        default: return { label: stage, cls: 'bg-slate-100 text-slate-700' };
       }
-
-      toast.classList.remove('opacity-0', 'translate-y-3', 'pointer-events-none');
-      toast.classList.add('opacity-100', 'translate-y-0');
-
-      setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', 'translate-y-3', 'pointer-events-none');
-      }, 2500);
     }
 
-    /* ==========================================================================
-       Window Scope Bindings
-       ========================================================================== */
-    window.openGoogleSheetsModal = openGoogleSheetsModal;
-    window.closeGoogleSheetsModal = closeGoogleSheetsModal;
-    window.saveGSheetsConfig = saveGSheetsConfig;
-    window.manualPushGSheets = manualPushGSheets;
-    window.manualPullGSheets = manualPullGSheets;
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
 
-    window.openScratchpadModal = openScratchpadModal;
-    window.closeScratchpadModal = closeScratchpadModal;
-    window.addScratchpadNote = addScratchpadNote;
-    window.toggleScratchpadNote = toggleScratchpadNote;
-    window.deleteScratchpadNote = deleteScratchpadNote;
-    window.sendScratchpadNoteToLine = sendScratchpadNoteToLine;
-    window.sendAllPendingNotesToLine = sendAllPendingNotesToLine;
+      let bg = 'bg-slate-900 text-white';
+      let icon = 'ph-info';
+      if (type === 'success') {
+        bg = 'bg-emerald-600 text-white';
+        icon = 'ph-check-circle';
+      } else if (type === 'error') {
+        bg = 'bg-rose-600 text-white';
+        icon = 'ph-warning-circle';
+      }
 
+      toast.className = `${bg} px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2 transform transition-all duration-200 pointer-events-auto max-w-xs animate-in slide-in-from-top-2`;
+      toast.innerHTML = `<i class="ph-bold ${icon} text-base shrink-0"></i> <span>${escapeHtml(message)}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-[-8px]');
+        setTimeout(() => toast.remove(), 200);
+      }, 3200);
+    }
+
+    // Global bindings
+    window.switchTab = switchTab;
+    window.openQuickAddModal = openQuickAddModal;
+    window.closeQuickAddModal = closeQuickAddModal;
     window.openDealModal = openDealModal;
     window.closeDealModal = closeDealModal;
     window.saveDeal = saveDeal;
-    window.deleteDeal = deleteDeal;
+    window.deleteCurrentDeal = deleteCurrentDeal;
     window.quickExtendDeal = quickExtendDeal;
     window.markDealWon = markDealWon;
-
+    window.filterDealStage = filterDealStage;
+    window.renderDealsList = renderDealsList;
+    window.renderOverviewNotes = renderOverviewNotes;
+    window.renderDedicatedNotes = renderDedicatedNotes;
+    window.handleOverviewAddNote = handleOverviewAddNote;
+    window.handleDedicatedAddNote = handleDedicatedAddNote;
+    window.filterNotes = filterNotes;
+    window.clearCompletedNotes = clearCompletedNotes;
+    window.toggleQuickNote = toggleQuickNote;
+    window.deleteQuickNote = deleteQuickNote;
+    window.sendSingleNoteToLine = sendSingleNoteToLine;
+    window.sendAllNotesToLine = sendAllNotesToLine;
+    window.sendDailyDealsToLine = sendDailyDealsToLine;
+    window.openAddCardChoiceModal = openAddCardChoiceModal;
+    window.closeAddCardChoiceModal = closeAddCardChoiceModal;
+    window.triggerCameraOCR = triggerCameraOCR;
+    window.handleCardImageCaptured = handleCardImageCaptured;
     window.openCardModal = openCardModal;
     window.closeCardModal = closeCardModal;
     window.saveCard = saveCard;
-    window.deleteCard = deleteCard;
+    window.deleteCurrentCard = deleteCurrentCard;
     window.convertCardToDeal = convertCardToDeal;
-
-    window.saveLineConfig = saveLineConfig;
-    window.sendLineTestPush = sendLineTestPush;
-    window.sendTodayDealsToLine = sendTodayDealsToLine;
-    window.switchTab = switchTab;
-    window.setDealsFilter = setDealsFilter;
-    window.filterDeals = filterDeals;
-    window.filterCards = filterCards;
+    window.renderCardsList = renderCardsList;
+    window.openSettingsModal = openSettingsModal;
+    window.closeSettingsModal = closeSettingsModal;
+    window.switchSettingsTab = switchSettingsTab;
+    window.saveApiKeyFromSettings = saveApiKeyFromSettings;
+    window.saveSheetsConfigFromSettings = saveSheetsConfigFromSettings;
+    window.saveLineSettingsFromSettings = saveLineSettingsFromSettings;
+    window.syncToGoogleSheets = syncToGoogleSheets;
+    window.pullFromGoogleSheets = pullFromGoogleSheets;
     window.showToast = showToast;
-
-    // Run on load
-    window.addEventListener('DOMContentLoaded', initializeState);
   </script>
 </body>
 </html>
